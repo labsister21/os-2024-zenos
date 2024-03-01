@@ -33,12 +33,12 @@ extern struct IDTR _idt_idtr;
 struct IDTGate {
     // First 32-bit (Bit 0 to 31)
     uint16_t offset_low;
-    uint16_t segment_selector;
-    uint8_t reserved : 5 ;
-    uint8_t three_zero_padding : 3 ;
-    uint8_t one_one_zero_padding : 3 ;
-    uint8_t size_of_gate : 1;
-    uint8_t zero_padding : 1 ;
+    uint16_t segment;
+    uint8_t _reserved : 5 ;
+    uint8_t _r_bit_1  : 3 ;
+    uint8_t _r_bit_2 : 3 ;
+    uint8_t gate_32 : 1;
+    uint8_t _r_bit_3 : 1 ;
     uint8_t descriptor_priv_level_idt : 2 ;
     uint8_t present_segment_flag_idt: 1 ;
     uint16_t offset_high;
