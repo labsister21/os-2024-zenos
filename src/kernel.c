@@ -1,7 +1,7 @@
 #include <stdint.h>
+#include <stdbool.h> 
 #include "header/cpu/gdt.h"
 #include "header/kernel-entrypoint.h"
-#include <stdbool.h>
 
 void kernel_setup(void) {
     uint32_t a;
