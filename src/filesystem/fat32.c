@@ -14,7 +14,11 @@ uint32_t cluster_to_lba(uint32_t cluster){
     return cluster*CLUSTER_SIZE;
 };
 
-// void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uint32_t parent_dir_cluster);
+void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uint32_t parent_dir_cluster){
+    struct FAT32DirectoryEntry entry;
+    int i;
+    
+}
 
 bool is_empty_storage(void){
     struct BlockBuffer block;
@@ -61,7 +65,9 @@ void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count){
 
 // int8_t read_directory(struct FAT32DriverRequest request);
 
-// int8_t read(struct FAT32DriverRequest request);
+int8_t read(struct FAT32DriverRequest request){
+    read_clusters(driverState.fa);
+}
 
 // int8_t write(struct FAT32DriverRequest request);
 
