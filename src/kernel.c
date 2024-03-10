@@ -5,6 +5,7 @@
 #include "header/framebuffer.h"
 #include "interrupt/idt.h"
 #include "interrupt/interrupt.h"
+#include "./header/driver/disk.h"
 
 // void kernel_setup(void) {
 //     uint32_t a;
@@ -29,12 +30,23 @@
 // }
 
 void kernel_setup(void) {
+    // load_gdt(&_gdt_gdtr);
+    // pic_remap();
+    // initialize_idt();
+    // framebuffer_clear();
+    // framebuffer_set_cursor(0, 0);
+    // __asm__("int $0x4");
+    // while(true);
     load_gdt(&_gdt_gdtr);
     pic_remap();
+    // activate_keyboard_interrupt();
     initialize_idt();
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
-    __asm__("int $0x4");
-    while(true);
+
+    struct BlockBuffer b;
+    for (int i = 0; i < 512; i++) b.buf[i] = i % 16;
+    write_blocks(&b, 17, 1);
+    while (true);
 }
 
