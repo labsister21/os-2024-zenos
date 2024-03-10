@@ -15,16 +15,28 @@ uint32_t cluster_to_lba(uint32_t cluster){
 };
 
 void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uint32_t parent_dir_cluster){
-    struct FAT32DirectoryEntry entry;
-    int i;
+    // struct FAT32DirectoryEntry entry;
+    uint8_t i;
+   memcpy(dir_table->table[0].name,name,8);
+
+
+   dir_table->table[0].cluster_high = ((uint32_t)parent_dir_cluster >> 16) & 0xffff;
+   dir_table->table[0].cluster_low = ((uint32_t)parent_dir_cluster & 0xffff);
+   dir_table->table[0].filesize = 0; // this might cause an error
+   dir_table->table[0].user_attribute = UATTR_NOT_EMPTY;
     
+   for (i = 1 ; i < 64 ; i++ ){
+    dir_table->table[i].user_attribute = !UATTR_NOT_EMPTY;
+   }
+   write_clusters(dir_table->table,parent_dir_cluster,1);
+
 }
 
 bool is_empty_storage(void){
     struct BlockBuffer block;
     read_blocks(block.buf,BOOT_SECTOR,1);
     bool isEmpty = false;
-    int i = 0;
+    uint8_t i = 0;
     while(i<BLOCK_SIZE and !isEmpty){
         if(block.buf[i] != fs_signature[i]){
             isEmpty = true;
@@ -39,7 +51,7 @@ void create_fat32(void){
     driverState.fat_table.cluster_map[0] = CLUSTER_0_VALUE;
     driverState.fat_table.cluster_map[1] = CLUSTER_1_VALUE;
     driverState.fat_table.cluster_map[2] = FAT32_FAT_END_OF_FILE; // Root
-    int i;
+    uint8_t i;
     for (i=3;i<CLUSTER_MAP_SIZE;i++){
         driverState.fat_table.cluster_map[i] = FAT32_FAT_EMPTY_ENTRY;
     };
