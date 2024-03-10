@@ -1,3 +1,6 @@
+#include "interrupt.h"
+#include "../header/cpu/portio.h"
+
 void io_wait(void) {
     out(0x80, 0);
 }
@@ -30,4 +33,10 @@ void pic_remap(void) {
     // Disable all interrupts
     out(PIC1_DATA, PIC_DISABLE_ALL_MASK);
     out(PIC2_DATA, PIC_DISABLE_ALL_MASK);
+}
+
+void main_interrupt_handler(struct InterruptFrame frame) {
+    switch (frame.int_number) {
+        // ...
+    }
 }
