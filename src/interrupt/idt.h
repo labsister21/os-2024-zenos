@@ -67,9 +67,9 @@ struct  InterruptDescriptorTable {
 // TODO : Implement
 // ...
 struct IDTR{
-    InterruptDescriptorTable* address; 
     uint16_t size;
-}
+    struct InterruptDescriptorTable* address; 
+} __attribute__((packed));
 
 
 

@@ -5,6 +5,12 @@ struct InterruptDescriptorTable interrupt_descriptor_table = {
 
     },
 };
+
+struct IDTR _idt_idtr = {
+    .size = sizeof(interrupt_descriptor_table) - 1,
+    .address = &interrupt_descriptor_table,
+};
+
 void initialize_idt(void) {
     /* 
      * TODO: 
