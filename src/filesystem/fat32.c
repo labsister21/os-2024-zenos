@@ -28,7 +28,7 @@ bool is_empty_storage(void){
         }
     }
     return isEmpty;
-}
+};
 
 void create_fat32(void){
     write_blocks(fs_signature,BOOT_SECTOR,1);
@@ -49,13 +49,15 @@ void initialize_filesystem_fat32(void){
     else{
         read_clusters(&driverState.fat_table,1,1);
     }
-}
+};
 
 void write_clusters(const void *ptr, uint32_t cluster_number, uint8_t cluster_count){
     write_blocks(ptr,cluster_to_lba(cluster_number),CLUSTER_BLOCK_COUNT*cluster_count);
-}
+};
 
-// void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count);
+void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count){
+    read_blocks(ptr,cluster_to_lba(cluster_number),CLUSTER_BLOCK_COUNT*cluster_count);
+};
 
 // int8_t read_directory(struct FAT32DriverRequest request);
 
