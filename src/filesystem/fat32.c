@@ -13,3 +13,34 @@ const uint8_t fs_signature[BLOCK_SIZE] = {
     [BLOCK_SIZE-2] = 'O',
     [BLOCK_SIZE-1] = 'k',
 };
+
+void create_fat32(void){
+    struct FAT32FileAllocationTable allocationTable;
+    allocationTable.cluster_map[0] = CLUSTER_0_VALUE;
+    allocationTable.cluster_map[1] = CLUSTER_1_VALUE;
+    allocationTable.cluster_map[2] = FAT32_FAT_END_OF_FILE; // Root
+    int i;
+    for (i=3;i<CLUSTER_MAP_SIZE;i++){
+        allocationTable.cluster_map[i] = FAT32_FAT_EMPTY_ENTRY;
+    }
+};
+
+// uint32_t cluster_to_lba(uint32_t cluster);
+
+// void init_directory_table(struct FAT32DirectoryTable *dir_table, char *name, uint32_t parent_dir_cluster);
+
+// bool is_empty_storage(void);
+
+// void initialize_filesystem_fat32(void);
+
+// void write_clusters(const void *ptr, uint32_t cluster_number, uint8_t cluster_count);
+
+// void read_clusters(void *ptr, uint32_t cluster_number, uint8_t cluster_count);
+
+// int8_t read_directory(struct FAT32DriverRequest request);
+
+// int8_t read(struct FAT32DriverRequest request);
+
+// int8_t write(struct FAT32DriverRequest request);
+
+// int8_t delete(struct FAT32DriverRequest request);
