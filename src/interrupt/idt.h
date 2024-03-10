@@ -53,7 +53,7 @@ struct IDTGate {
  * ...
  */
 struct  InterruptDescriptorTable {
-    struct IDTGate table[GDT_MAX_ENTRY_COUNT];
+    struct IDTGate table[IDT_MAX_ENTRY_COUNT];
 } __attribute__((packed));
 
 // ...
@@ -67,9 +67,9 @@ struct  InterruptDescriptorTable {
 // TODO : Implement
 // ...
 struct IDTR{
-    InterruptDescriptorTable* address; 
+    struct InterruptDescriptorTable* address; 
     uint16_t size;
-}
+} __attribute__((packed));
 
 
 

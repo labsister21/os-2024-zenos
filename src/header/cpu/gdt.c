@@ -26,7 +26,7 @@ struct GlobalDescriptorTable global_descriptor_table = {
         {
             // TODO : Implement
             // Kernel code segment
-            .segment_low = 0xFFFFF,
+            .segment_low = 0xFFFF,
             .base_low = 0, 
             .base_mid = 0, 
             .type_bit = 0xA, 
@@ -43,7 +43,7 @@ struct GlobalDescriptorTable global_descriptor_table = {
         {
             // TODO : Implement
             // Kernel data segment
-            .segment_low = 0xFFFFF,
+            .segment_low = 0xFFFF,
             .base_low = 0, 
             .base_mid = 0, 
             .type_bit = 0x2, 
@@ -66,4 +66,6 @@ struct GlobalDescriptorTable global_descriptor_table = {
 struct GDTR _gdt_gdtr = {
     // TODO : Implement, this GDTR will point to global_descriptor_table.
     //        Use sizeof operator
+    .size = sizeof(global_descriptor_table),
+    .address = &global_descriptor_table
 };

@@ -1,3 +1,9 @@
 {
     "debug.onTaskErrors": "debugAnyway",
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "interrupt.h": "c",
+        "string.h": "c",
+        "framebuffer.h": "c"
+    },
 }
