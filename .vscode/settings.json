@@ -4,6 +4,8 @@
     "files.associations": {
         "interrupt.h": "c",
         "string.h": "c",
-        "framebuffer.h": "c"
+        "framebuffer.h": "c",
+        "gdt.h": "c",
+        "stdio.h": "c"
     },
 }

@@ -6,6 +6,7 @@
 #include "interrupt/idt.h"
 #include "interrupt/interrupt.h"
 #include "header/keyboard.h"
+#include "header/stdlib/string.h"
 
 // void kernel_setup(void) {
 //     uint32_t a;
