@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include "../header/stdlib/string.h"
 #include "../header/filesystem/fat32.h"
-
 const uint8_t fs_signature[BLOCK_SIZE] = {
     'z','e','n','O','S',' ','h','a','s',' ','b','o','o','t','e','d'
 };
@@ -37,12 +36,12 @@ bool is_empty_storage(void){
     struct BlockBuffer block;
     read_blocks(block.buf,BOOT_SECTOR,1);
     bool isEmpty = false;
-    uint8_t i = 0;
-    while(i<BLOCK_SIZE and !isEmpty){
+    uint16_t i = 0;
+    while((i<BLOCK_SIZE) && (!isEmpty)){
         if(block.buf[i] != fs_signature[i]){
             isEmpty = true;
+        };
         i++;
-        }
     }
     return isEmpty;
 };
@@ -52,7 +51,7 @@ void create_fat32(void){
     driverState.fat_table.cluster_map[0] = CLUSTER_0_VALUE;
     driverState.fat_table.cluster_map[1] = CLUSTER_1_VALUE;
     driverState.fat_table.cluster_map[2] = FAT32_FAT_END_OF_FILE; // Root
-    uint8_t i;
+    uint16_t i;
     for (i=3;i<CLUSTER_MAP_SIZE;i++){
         driverState.fat_table.cluster_map[i] = FAT32_FAT_EMPTY_ENTRY;
     };
@@ -83,7 +82,7 @@ int8_t read_directory(struct FAT32DriverRequest request){
     uint8_t i = 0;
     while(i<(uint8_t)(CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry)) && !isFound){
         if(memcmp(driverState.dir_table_buf.table[i].name,request.name,8) == 0){
-            if(driverState.dir_table_buf.table[i].filesize == 0 || driverState.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY){
+            if(driverState.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY){
                 isFound = true;
             }
             else{
@@ -108,7 +107,7 @@ int8_t read(struct FAT32DriverRequest request){
     uint8_t i = 0;
     while(i<(uint8_t)(CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry)) && !isFound){
         if(memcmp(driverState.dir_table_buf.table[i].name,request.name,8) == 0 && memcmp(driverState.dir_table_buf.table[i].ext,request.ext,3) == 0){
-            if(driverState.dir_table_buf.table[i].filesize == 0 || driverState.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY){
+            if(driverState.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY){
                 return 1;
             }
             else if(driverState.dir_table_buf.table[i].filesize > request.buffer_size){
@@ -141,7 +140,7 @@ int8_t read(struct FAT32DriverRequest request){
 
 int8_t write(struct FAT32DriverRequest request){
     uint16_t i;
-    uint16_t dir_loc = -1;
+    int8_t dir_loc = -1;
     uint16_t clusters_needed = request.buffer_size/CLUSTER_SIZE;
     uint16_t cluster_located = 0;
     uint16_t k =  3; // start after reserved
@@ -204,8 +203,8 @@ int8_t write(struct FAT32DriverRequest request){
     }
     memcpy(driverState.dir_table_buf.table[dir_loc].name,request.name,8);
     driverState.dir_table_buf.table[dir_loc].user_attribute = UATTR_NOT_EMPTY;
-    driverState.dir_table_buf.table[dir_loc].cluster_high = (cluster_located[0] >> 16) & 0xffff;
-    driverState.dir_table_buf.table[dir_loc].cluster_low = cluster_located[0] & 0xffff;
+    driverState.dir_table_buf.table[dir_loc].cluster_high = (cluster_located >> 16) & 0xffff;
+    driverState.dir_table_buf.table[dir_loc].cluster_low = cluster_located & 0xffff;
     driverState.dir_table_buf.table[dir_loc].filesize = request.buffer_size;
     // time to write file/folder
     if (request.buffer_size == 0){
@@ -268,14 +267,14 @@ int8_t delete(struct FAT32DriverRequest request){
                 driverState.dir_table_buf.table[i].user_attribute = !UATTR_NOT_EMPTY;
                 write_clusters(&driverState.dir_table_buf, request.parent_cluster_number, 1);
                 uint8_t j;
-                for(j=0;j<n_cluster<j++){
+                for(j=0; j<n_cluster; j++){
                     temp_cluster = curr_cluster;
-                    driver_state.fat_table.cluster_map[curr_cluster] = 0;
+                    driverState.fat_table.cluster_map[curr_cluster] = 0;
                     if(j!=n_cluster-1){
                         curr_cluster = driverState.fat_table.cluster_map[temp_cluster];
                     }
                 }
-                write(&driverState.fat_table,1,1);
+                write_clusters(&driverState.fat_table,1,1);
                 return 0;
             }
         }
