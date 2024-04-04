@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <stdbool.h> 
+#include <stdbool.h>
 #include "header/cpu/gdt.h"
 #include "header/kernel-entrypoint.h"
 #include "header/framebuffer.h"
@@ -7,6 +7,7 @@
 #include "interrupt/interrupt.h"
 #include "header/keyboard.h"
 #include "header/stdlib/string.h"
+#include "header/memory/paging.h"
 
 // void kernel_setup(void) {
 //     uint32_t a;
