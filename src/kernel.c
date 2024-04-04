@@ -39,13 +39,14 @@ void kernel_setup(void) {
     // while(true);
     load_gdt(&_gdt_gdtr);
     pic_remap();
-    // // activate_keyboard_interrupt();
+    // activate_keyboard_interrupt();
     initialize_idt();
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
 
-
     struct BlockBuffer b;
+    for (int i = 0; i < 512; i++) b.buf[i] = i % 16;
+    write_blocks(&b, 17, 1);
 
     read_blocks(&b, 17, 1);
     for (int i = 0 ; i < 128; i++) b.buf[i] = 1;
