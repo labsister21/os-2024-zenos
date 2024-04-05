@@ -6,7 +6,8 @@
 static struct KeyboardDriverState keyboard_state = {
     .keyboard_input_on = true,
     .keyboard_buffer = {0},
-    .curr_buff_idx = 0
+    .read_idx = 0,
+    .write_idx = 0,
 };
 
 const char keyboard_scancode_1_to_ascii_map[256] = {
@@ -39,7 +40,8 @@ void keyboard_state_deactivate(void){
 }
 
 void get_keyboard_buffer(char *buf){
-    memcpy(buf, keyboard_state.keyboard_buffer, 256);
+    memcpy(buf, keyboard_state.keyboard_buffer, 1);
+    memset(keyboard_state.keyboard_buffer, 0, 1);
 }
 
 void keyboard_isr(void) {
@@ -47,8 +49,19 @@ void keyboard_isr(void) {
     // TODO : Implement scancode processing
     if(keyboard_state.keyboard_input_on){
         char mapped_char = keyboard_scancode_1_to_ascii_map[scancode];
-        keyboard_state.keyboard_buffer[keyboard_state.curr_buff_idx] = mapped_char;
-        keyboard_state.curr_buff_idx++;
+        switch (scancode){
+        case 0x3A:
+            keyboard_state.caps_lock = !keyboard_state.caps_lock;
+            break;
+        
+        default:
+            break;
+        }
+
+        if(keyboard_state.caps_lock){
+            mapped_char -= 32;
+        }
+        keyboard_state.keyboard_buffer[0] = mapped_char;
     }
     pic_ack(IRQ_KEYBOARD);
 }
