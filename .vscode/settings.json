@@ -5,6 +5,9 @@
         "interrupt.h": "c",
         "string.h": "c",
         "framebuffer.h": "c",
+        "gdt.h": "c",
+        "stdio.h": "c",
+        "paging.h": "c",
         "stdint.h": "c",
         "stddef.h": "c",
         "sstream": "c"

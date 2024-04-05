@@ -1,5 +1,10 @@
 #include "interrupt.h"
 #include "../header/cpu/portio.h"
+#include "../header/keyboard.h"
+
+struct TSSEntry _interrupt_tss_entry = {
+    .ss0  = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
+};
 
 void io_wait(void) {
     out(0x80, 0);
@@ -37,6 +42,20 @@ void pic_remap(void) {
 
 void main_interrupt_handler(struct InterruptFrame frame) {
     switch (frame.int_number) {
-        // ...
+        case PIC1_OFFSET + IRQ_KEYBOARD:
+            keyboard_isr();
+            break;
     }
+}
+
+void activate_keyboard_interrupt(void) {
+    out(PIC1_DATA, in(PIC1_DATA) & ~(1 << IRQ_KEYBOARD));
+}
+
+void set_tss_kernel_current_stack(void) {
+    uint32_t stack_ptr;
+    // Reading base stack frame instead esp
+    __asm__ volatile ("mov %%ebp, %0": "=r"(stack_ptr) : /* <Empty> */);
+    // Add 8 because 4 for ret address and other 4 is for stack_ptr variable
+    _interrupt_tss_entry.esp0 = stack_ptr + 8; 
 }
