@@ -52,3 +52,9 @@ iso: kernel
 # TODO: Create ISO image
 	@genisoimage -R $(BOOT_FLAG) $(IO_FLAG)
 	@rm -r $(OUTPUT_FOLDER)/iso/
+
+inserter:
+	@$(CC) -Wno-builtin-declaration-mismatch -g \
+		$(SOURCE_FOLDER)/string.c $(SOURCE_FOLDER)/fat32.c \
+		$(SOURCE_FOLDER)/external-inserter.c \
+		-o $(OUTPUT_FOLDER)/inserter
