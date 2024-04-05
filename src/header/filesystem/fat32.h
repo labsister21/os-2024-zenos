@@ -139,7 +139,15 @@ struct FAT32DriverRequest {
 } __attribute__((packed));
 
 
-
+/**
+ * Buatan sendiri
+ * Menggabungkan cluster high dan cluster low 
+ * 
+ * @param high  cluster high
+ * @param low   cluster low
+ * @return uint32_t gabungan cluster high dan low
+ */
+uint32_t mergeClusterHighLow(uint16_t high, uint16_t low);
 
 
 /* -- Driver Interfaces -- */
