@@ -167,20 +167,14 @@ int8_t write(struct FAT32DriverRequest request){
             // validate file or folder name
             dir_loc = i;
         }
-        else if (request.buffer_size == 0){
-            // check if folder name same
-            if (memcmp(driverState.dir_table_buf.table[i].name, request.name,8) == 0){
-                return 1;
-            }
-            
-        }
-        else if (request.buffer_size > 0){
+
+        else if (request.buffer_size >= 0){
             if ( (memcmp(driverState.dir_table_buf.table[i].name, request.name,8  ) == 0 ) && (memcmp(driverState.dir_table_buf.table[i].ext , request.ext,3) == 0) ){
                 return 1;
             }
         }
         else {
-            // invalid buffer
+            // invalid buffer, buffer < 0
             return -1;
         }
     }
