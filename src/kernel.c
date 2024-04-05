@@ -6,6 +6,7 @@
 #include "interrupt/idt.h"
 #include "interrupt/interrupt.h"
 #include "./header/driver/disk.h"
+#include "header/filesystem/fat32.h"
 
 // void kernel_setup(void) {
 //     uint32_t a;
@@ -44,9 +45,21 @@ void kernel_setup(void) {
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
 
-    struct BlockBuffer b;
-    for (int i = 0; i < 512; i++) b.buf[i] = i%16;
-    write_blocks(&b, 17, 1);
+    // struct BlockBuffer b;
+    // for (int i = 0; i < 512; i++) b.buf[i] = i%16;
+    // write_blocks(&b, 17, 1);
+    // // write_blocks berhasil
+
+    // struct BlockBuffer a;
+    // read_blocks(&a, 17, 1);
+    // // read_blocks berhasil
+
+
+    // struct FAT32DriverState fat32driver_state;
+    // struct FAT32DriverRequest request;
+    initialize_filesystem_fat32();
+    // read_clusters(&driverState.dir_table_buf, request.parent_cluster_number, 1);
+    testReadClusters();
 
     while (true);
 }

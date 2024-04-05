@@ -6,6 +6,7 @@
         "string.h": "c",
         "framebuffer.h": "c",
         "stdint.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "sstream": "c"
     },
 }
