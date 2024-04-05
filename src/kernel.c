@@ -49,12 +49,21 @@ void kernel_setup(void) {
     framebuffer_set_cursor(0, 0);
         
     keyboard_state_activate();
+    char c;
     while (true) {
-        char c;
+        
         get_keyboard_buffer(&c);
         if(c){
-            framebuffer_write(0, framebuffer_get_col(), c, 0xF, 0);
-            framebuffer_set_cursor(0, framebuffer_get_col()+ 1);
+            if(c == '\n'){
+                framebuffer_set_cursor(framebuffer_get_row()+ 1, 0);
+            }else if(c == '\b'){
+                framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col() - 1);
+                framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), ' ', 0xF, 0);
+            }else{
+                framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, 0xF, 0);
+                framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col()+ 1);
+            }
+            
         }
     }
 }
