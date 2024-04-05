@@ -279,15 +279,22 @@ int8_t delete(struct FAT32DriverRequest request){
                     }
 
                     memset(tempDirTab.table, 0, 32);
-                    write_clusters(tempDirTab, cluster_num, 1);
+                    write_clusters(tempDirTab.table, cluster_num, 1);
 
-                    for(j=0;j<33;j++){
-                        if(j != 12){
-                            *(&driverState.dir_table_buf.table[i]+j) = 0;
-                        }else{
-                            *(&driverState.dir_table_buf.table[i]+j) = !UATTR_NOT_EMPTY;
-                        }
-                    }
+                    memset(driverState.dir_table_buf.table[i].name,0,8);
+                    memset(driverState.dir_table_buf.table[i].ext,0,3);
+                    driverState.dir_table_buf.table[i].attribute = 0;
+                    driverState.dir_table_buf.table[i].user_attribute = 0;
+                    driverState.dir_table_buf.table[i].undelete = 0;
+                    driverState.dir_table_buf.table[i].create_time = 0;
+                    driverState.dir_table_buf.table[i].create_date = 0;
+                    driverState.dir_table_buf.table[i].access_date = 0;
+                    driverState.dir_table_buf.table[i].cluster_high = 0;
+                    driverState.dir_table_buf.table[i].modified_time = 0;
+                    driverState.dir_table_buf.table[i].modified_date = 0;
+                    driverState.dir_table_buf.table[i].cluster_low = 0;
+                    driverState.dir_table_buf.table[i].filesize = 0;
+                    
                     driverState.fat_table.cluster_map[cluster_num] = 0;
                     // driverState.dir_table_buf.table[i].user_attribute = !UATTR_NOT_EMPTY;
                     // driverState.dir_table_buf.table[i].cluster_low = 0;
@@ -312,14 +319,19 @@ int8_t delete(struct FAT32DriverRequest request){
                         curr_cluster = temp_cluster;
                     }while(curr_cluster != FAT32_FAT_END_OF_FILE);
 
-                    uint8_t j;
-                    for(j=0; j<33; j++){
-                        if(j != 12){
-                            *(&driverState.dir_table_buf.table[i]+j) = 0;
-                        }else{
-                            *(&driverState.dir_table_buf.table[i]+j) = !UATTR_NOT_EMPTY;
-                        }
-                    }
+                    memset(driverState.dir_table_buf.table[i].name,0,8);
+                    memset(driverState.dir_table_buf.table[i].ext,0,3);
+                    driverState.dir_table_buf.table[i].attribute = 0;
+                    driverState.dir_table_buf.table[i].user_attribute = 0;
+                    driverState.dir_table_buf.table[i].undelete = 0;
+                    driverState.dir_table_buf.table[i].create_time = 0;
+                    driverState.dir_table_buf.table[i].create_date = 0;
+                    driverState.dir_table_buf.table[i].access_date = 0;
+                    driverState.dir_table_buf.table[i].cluster_high = 0;
+                    driverState.dir_table_buf.table[i].modified_time = 0;
+                    driverState.dir_table_buf.table[i].modified_date = 0;
+                    driverState.dir_table_buf.table[i].cluster_low = 0;
+                    driverState.dir_table_buf.table[i].filesize = 0;
         
                     write_clusters(driverState.dir_table_buf.table,request.parent_cluster_number,1);
                     write_clusters(driverState.fat_table.cluster_map,1,1);

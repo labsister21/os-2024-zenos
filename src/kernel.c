@@ -59,7 +59,7 @@ void kernel_setup(void) {
     // struct FAT32DriverRequest request;
     initialize_filesystem_fat32();
     // read_clusters(&driverState.dir_table_buf, request.parent_cluster_number, 1);
-    testReadClusters();
+    // testReadClusters();
 
     while (true);
 }
