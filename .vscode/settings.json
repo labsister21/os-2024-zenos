@@ -8,9 +8,10 @@
         "gdt.h": "c",
         "stdio.h": "c",
         "keyboard.h": "c",
-        "stdint.h": "c",
+        "paging.h": "c",
         "stdint.h": "c",
         "stddef.h": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "portio.h": "c"
     },
 }
