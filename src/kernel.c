@@ -5,6 +5,8 @@
 #include "header/framebuffer.h"
 #include "interrupt/idt.h"
 #include "interrupt/interrupt.h"
+#include "header/keyboard.h"
+#include "header/stdlib/string.h"
 #include "./header/driver/disk.h"
 #include "header/filesystem/fat32.h"
 
@@ -30,6 +32,16 @@
 //     while (true);
 // }
 
+// void kernel_setup(void) {
+//     load_gdt(&_gdt_gdtr);
+//     pic_remap();
+//     initialize_idt();
+//     framebuffer_clear();
+//     framebuffer_set_cursor(0, 0);
+//     __asm__("int $0x4");
+//     while(true);
+// }
+
 void kernel_setup(void) {
     // load_gdt(&_gdt_gdtr);
     // pic_remap();
@@ -42,25 +54,26 @@ void kernel_setup(void) {
     pic_remap();
     // activate_keyboard_interrupt();
     initialize_idt();
+    activate_keyboard_interrupt();
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
-
-    // struct BlockBuffer b;
-    // for (int i = 0; i < 512; i++) b.buf[i] = i%16;
-    // write_blocks(&b, 17, 1);
-    // // write_blocks berhasil
-
-    // struct BlockBuffer a;
-    // read_blocks(&a, 17, 1);
-    // // read_blocks berhasil
-
-
-    // struct FAT32DriverState fat32driver_state;
-    // struct FAT32DriverRequest request;
-    initialize_filesystem_fat32();
-    // read_clusters(&driverState.dir_table_buf, request.parent_cluster_number, 1);
-    // testReadClusters();
-
-    while (true);
+        
+    keyboard_state_activate();
+    char c;
+    while (true) {
+        
+        get_keyboard_buffer(&c);
+        if(c){
+            if(c == '\n'){
+                framebuffer_set_cursor(framebuffer_get_row()+ 1, 0);
+            }else if(c == '\b'){
+                framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col() - 1);
+                framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), ' ', 0xF, 0);
+            }else{
+                framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, 0xF, 0);
+                framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col()+ 1);
+            }
+            
+        }
+    }
 }
-

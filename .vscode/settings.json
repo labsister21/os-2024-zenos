@@ -5,6 +5,10 @@
         "interrupt.h": "c",
         "string.h": "c",
         "framebuffer.h": "c",
+        "gdt.h": "c",
+        "stdio.h": "c",
+        "keyboard.h": "c",
+        "stdint.h": "c",
         "stdint.h": "c",
         "stddef.h": "c",
         "sstream": "c"

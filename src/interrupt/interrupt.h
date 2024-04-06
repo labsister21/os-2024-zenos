@@ -41,7 +41,7 @@
 
 // PIC Master
 #define IRQ_TIMER        0
-#define IRQ_KEYBOARD     1
+#define IRQ_KEYBOARD 1
 #define IRQ_CASCADE      2
 #define IRQ_COM2         3
 #define IRQ_COM1         4

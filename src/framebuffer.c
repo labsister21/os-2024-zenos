@@ -47,3 +47,20 @@ void framebuffer_clear(void) {
         }
     }
 }
+
+uint16_t framebuffer_get_cursor(){
+    uint16_t position =0;
+    out(CURSOR_PORT_CMD, LowerByte);
+    position |= in(CURSOR_PORT_DATA);
+    out(CURSOR_PORT_CMD, UpperByte);
+    position |= ((uint16_t) in(CURSOR_PORT_DATA)) << 8;
+    return position;
+}
+
+uint8_t framebuffer_get_row(){
+    return framebuffer_get_cursor() / 80;
+}
+
+uint8_t framebuffer_get_col(){
+    return framebuffer_get_cursor() % 80;
+}
