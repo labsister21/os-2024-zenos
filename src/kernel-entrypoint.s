@@ -1,6 +1,26 @@
 global loader       ; the entry symbol for ELF
 global load_gdt     ; load GDT table
 extern kernel_setup ; kernel
+// Optional linker variable : Pointing to kernel start & end address
+// Note : Use & operator, example : a = (uint32_t) &_linker_kernel_stack_top;
+extern uint32_t _linker_kernel_virtual_addr_start;
+extern uint32_t _linker_kernel_virtual_addr_end;
+extern uint32_t _linker_kernel_physical_addr_start;
+extern uint32_t _linker_kernel_physical_addr_end;
+extern uint32_t _linker_kernel_stack_top;
+
+/**
+ * Execute user program from kernel, one way jump. This function is defined in asm source code.
+ * 
+ * @param virtual_addr Pointer into user program that already in memory
+ * @warning            Assuming pointed memory is properly loaded with instruction
+ */
+extern void kernel_execute_user_program(void *virtual_addr);
+
+/**
+ * Set the tss register pointing to GDT_TSS_SELECTOR with ring 0
+ */
+extern void set_tss_register(void);  // Implemented in kernel-entrypoint.s
 
 KERNEL_STACK_SIZE equ 4096           ; size of stack in bytes
 MAGIC_NUMBER      equ 0x1BADB002     ; define the magic number constant
@@ -49,3 +69,27 @@ flush_cs:
     mov ds, ax
     mov es, ax
     ret
+
+global kernel_execute_user_program
+kernel_execute_user_program:
+    mov  eax, 0x20 | 0x3
+    mov  ds, ax
+    mov  es, ax
+    mov  fs, ax
+    mov  gs, ax
+    
+    ; Using iret (return instruction for interrupt) technique for privilege change
+    ; Stack values will be loaded into these register:
+    ; [esp] -> eip, [esp+4] -> cs, [esp+8] -> eflags, [] -> user esp, [] -> user ss
+    mov  ecx, [esp+4] ; Save first (before pushing anything to stack) for last push
+    push eax ; Stack segment selector (GDT_USER_DATA_SELECTOR), user privilege
+    mov  eax, ecx
+    add  eax, 0x400000 - 4
+    push eax ; User space stack pointer (esp), move it into last 4 MiB
+    pushf    ; eflags register state, when jump inside user program
+    mov  eax, 0x18 | 0x3
+    push eax ; Code segment selector (GDT_USER_CODE_SELECTOR), user privilege
+    mov  eax, ecx
+    push eax ; eip register to jump back
+
+    iret
