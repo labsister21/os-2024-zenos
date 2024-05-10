@@ -72,9 +72,11 @@ void putchar(char c, uint32_t color){
         framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col() - 1);
         framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), ' ', color, 0);
     }else{
-        framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, color, 0);
+        framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, 0xF, 0);
         framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col()+ 1);
     }
+    // framebuffer_write(0, 0, c, color, 0);
+    // framebuffer_set_cursor(0,1);
 }
 
 void puts(const char *str, uint32_t color){

@@ -4,6 +4,7 @@
 #include "../header/cpu/gdt.h"
 #include "../header/filesystem/fat32.h"
 #include "../header/framebuffer.h"
+#include "../header/stdlib/string.h"
 
 struct TSSEntry _interrupt_tss_entry = {
     .ss0  = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
@@ -43,13 +44,7 @@ void pic_remap(void) {
     out(PIC2_DATA, PIC_DISABLE_ALL_MASK);
 }
 
-void main_interrupt_handler(struct InterruptFrame frame) {
-    switch (frame.int_number) {
-        case PIC1_OFFSET + IRQ_KEYBOARD:
-            keyboard_isr();
-            break;
-    }
-}
+
 
 void activate_keyboard_interrupt(void) {
     out(PIC1_DATA, in(PIC1_DATA) & ~(1 << IRQ_KEYBOARD));
@@ -78,14 +73,29 @@ void syscall(struct InterruptFrame frame) {
             *((int8_t*) frame.cpu.general.ecx) = delete(*(struct FAT32DriverRequest*) frame.cpu.general.ebx);
             break;
         case 4:
-            get_keyboard_buffer((char*) frame.cpu.general.ebx);
+            // keyboard_state_activate();
+            // // __asm__("sti");
+            char buf;
+            get_keyboard_buffer(&buf);
+            // buf = 'a';
+            *((char*)frame.cpu.general.ebx) = buf;
+            // frame.cpu.general.ecx = (uint32_t)buf;
+            // frame.cpu.general.edx = (uint32_t)buf;
+            // if(buf){
+            // // putchar(buf, 0xF);
+            // }
+            // memcpy(&frame.cpu.general.ebx, (uint32_t* )&buf, 8);
+
+            // if(buf){
+            //     putchar ((char)frame.cpu.general.ebx, 0xF);
+            // }
             break;
         case 5:
-            putchar((char) frame.cpu.general.ebx, (uint32_t) frame.cpu.general.ecx);
+            putchar( *((char*)frame.cpu.general.ebx) ,  (uint32_t) frame.cpu.general.ecx);
             break;
         case 6:
             puts(
-                (char*) frame.cpu.general.ebx, 
+                (char*) frame.cpu.general.edx, 
                 frame.cpu.general.ecx); // Assuming puts() exist in kernel
             break;
         case 7: 
@@ -99,6 +109,17 @@ void syscall(struct InterruptFrame frame) {
             break;
         case 10:
             framebuffer_set_cursor((uint8_t)  frame.cpu.general.ebx, (uint8_t)  frame.cpu.general.ecx);
+            break;
+    }
+}
+
+void main_interrupt_handler(struct InterruptFrame frame) {
+    switch (frame.int_number) {
+        case PIC1_OFFSET + IRQ_KEYBOARD:
+            keyboard_isr();
+            break;
+        case 0x30:
+            syscall(frame);
             break;
     }
 }

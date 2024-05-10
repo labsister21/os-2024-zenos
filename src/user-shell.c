@@ -68,30 +68,38 @@ int main(void) {
     //     syscall(5, (uint32_t) &buf, 0xF, 0);
     // }
 
-    char prompt[256] = SHELL_DIRECTORY;
-    while(true){
-    syscall(6, (uint32_t) prompt, (uint32_t) BIOS_BLUE, 0);
+    // char prompt[256] = SHELL_DIRECTORY;
+    // while(true){
+    // syscall(6, (uint32_t) prompt, (uint32_t) BIOS_BLUE, 0);
 
-    }
-    // struct ClusterBuffer      cl   = {0};
-    // struct FAT32DriverRequest request = {
-    //     .buf                   = &cl,
-    //     .name                  = "shell",
-    //     .ext                   = "\0\0\0",
-    //     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-    //     .buffer_size           = CLUSTER_SIZE,
-    // };
-    // int32_t retcode;
-    // syscall(0, (uint32_t) &request, (uint32_t) &retcode, 0);
-    // if (retcode == 0)
-    //     syscall(6, (uint32_t) "owo\n", 4, 0xF);
-
-    // char buf;
-    // syscall(7, 0, 0, 0);
-    // while (true) {
-    //     syscall(4, (uint32_t) &buf, 0, 0);
-    //     syscall(5, (uint32_t) &buf, 0xF, 0);
     // }
+    struct ClusterBuffer      cl   = {0};
+    struct FAT32DriverRequest request = {
+        .buf                   = &cl,
+        .name                  = "shell",
+        .ext                   = "\0\0\0",
+        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+        .buffer_size           = CLUSTER_SIZE,
+    };
+    int32_t retcode;
+    // if(retcode == 0){
+    //     syscall(5, (uint32_t) 'c', 0xF, 0);
+        
+    // }
+    syscall(0, (uint32_t) &request, (uint32_t) &retcode, 0);
+    if (retcode == 0){
+        // syscall(6, (uint32_t) "owo\n", 4, 0xF);
+        // syscall(5, (uint32_t) 'c', 0xF, 0);
+        }
 
-    // return 0;
+    char buf;
+    syscall(7, 0, 0, 0);
+    while (true) {
+        syscall(4, (uint32_t) &buf, 0, 0);
+        if(buf){
+            syscall(5, (uint32_t) &buf, 0, 0);
+        }
+    }
+
+    return 0;
 }
