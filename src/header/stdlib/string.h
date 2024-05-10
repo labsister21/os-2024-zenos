@@ -55,4 +55,18 @@ uint8_t strlen(char* str);
 void strsplit(char* str, char delim, char result[16][256]);
 
 
+uint8_t strlen(char* str);
+
+uint8_t strcmp(char* str1, char* str2);
+
+void strcpy(char* dest, char* src);
+
+void strncpy(char* dest, char* src, uint32_t len);
+
+void strcat(char* dest, char* src);
+
+void strset(char* str, char c, uint8_t len);
+
+void strsplit(char* str, char delim, char result[16][256]);
+
 #endif

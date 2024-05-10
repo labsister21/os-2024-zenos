@@ -58,7 +58,7 @@ void keyboard_state_deactivate(void){
 void get_keyboard_buffer(char *buf){
     if(keyboard_state.write_idx != keyboard_state.read_idx){
         memcpy(buf, &keyboard_state.keyboard_buffer[keyboard_state.read_idx], 1);
-         keyboard_state.read_idx = (keyboard_state.read_idx + 1) % 256;
+        keyboard_state.read_idx = (keyboard_state.read_idx + 1) % 256;
     }else{
         *buf = 0;
     }
