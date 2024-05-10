@@ -9,6 +9,11 @@
 #define CURSOR_PORT_CMD    0x03D4
 #define CURSOR_PORT_DATA   0x03D5
 
+enum upperlowerByte{
+    UpperByte = 0x0E,
+    LowerByte = 0x0F,
+};
+
 /**
  * Terminal framebuffer
  * Resolution: 80x25
@@ -44,5 +49,11 @@ void framebuffer_set_cursor(uint8_t r, uint8_t c);
  *
  */
 void framebuffer_clear(void);
+
+uint16_t framebuffer_get_cursor();
+
+uint8_t framebuffer_get_row();
+
+uint8_t framebuffer_get_col();
 
 #endif
