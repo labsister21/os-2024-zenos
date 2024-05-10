@@ -88,12 +88,12 @@ int main(void) {
     // }
     syscall(0, (uint32_t) &request, (uint32_t) &retcode, 0);
     if (retcode == 0){
-        // syscall(6, (uint32_t) "owo\n", 4, 0xF);
         // syscall(5, (uint32_t) 'c', 0xF, 0);
         }
 
     char buf;
     syscall(7, 0, 0, 0);
+    syscall(6, (uint32_t) "owo\n\0", 4, 0xF);
     while (true) {
         syscall(4, (uint32_t) &buf, 0, 0);
         if(buf){

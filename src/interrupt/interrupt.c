@@ -73,30 +73,15 @@ void syscall(struct InterruptFrame frame) {
             *((int8_t*) frame.cpu.general.ecx) = delete(*(struct FAT32DriverRequest*) frame.cpu.general.ebx);
             break;
         case 4:
-            // keyboard_state_activate();
-            // // __asm__("sti");
             char buf;
             get_keyboard_buffer(&buf);
-            // buf = 'a';
             *((char*)frame.cpu.general.ebx) = buf;
-            // frame.cpu.general.ecx = (uint32_t)buf;
-            // frame.cpu.general.edx = (uint32_t)buf;
-            // if(buf){
-            // // putchar(buf, 0xF);
-            // }
-            // memcpy(&frame.cpu.general.ebx, (uint32_t* )&buf, 8);
-
-            // if(buf){
-            //     putchar ((char)frame.cpu.general.ebx, 0xF);
-            // }
             break;
         case 5:
             putchar( *((char*)frame.cpu.general.ebx) ,  (uint32_t) frame.cpu.general.ecx);
             break;
         case 6:
-            puts(
-                (char*) frame.cpu.general.edx, 
-                frame.cpu.general.ecx); // Assuming puts() exist in kernel
+            puts((char*) frame.cpu.general.ebx, frame.cpu.general.ecx);
             break;
         case 7: 
             keyboard_state_activate();
