@@ -77,21 +77,21 @@ void putchar(char c, uint32_t color){
     }
 }
 
-void puts(const char *str, uint32_t count, uint32_t color){
+void puts(const char *str, uint32_t color){
     uint8_t i = 0;
-    char c = string[i];
+    char c = str[i];
 
     while (c != '\0')
     {
         if (c == '\n') {
-            row ++;
-            col = 0;
+            framebuffer_set_cursor(framebuffer_get_row()+1, 0);
             i ++;
-            c = string[i];
+            c = str[i];
             continue;
         }
-
+        framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, color, 0);
+        framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col()+ 1);
         i++;
-        c = string[i];
+        c = str[i];
     }
 }
