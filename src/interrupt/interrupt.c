@@ -1,6 +1,7 @@
-#include "interrupt.h"
+#include "../header/interrupt/interrupt.h"
 #include "../header/cpu/portio.h"
 #include "../header/keyboard.h"
+#include "../header/cpu/gdt.h"
 
 struct TSSEntry _interrupt_tss_entry = {
     .ss0  = GDT_KERNEL_DATA_SEGMENT_SELECTOR,

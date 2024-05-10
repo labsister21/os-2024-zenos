@@ -3,8 +3,8 @@
 #include "header/cpu/gdt.h"
 #include "header/kernel-entrypoint.h"
 #include "header/framebuffer.h"
-#include "interrupt/idt.h"
-#include "interrupt/interrupt.h"
+#include "header/interrupt/idt.h"
+#include "header/interrupt/interrupt.h"
 #include "./header/driver/disk.h"
 #include "header/filesystem/fat32.h"
 #include "./header/stdlib/string.h"
@@ -102,6 +102,7 @@
 //     while (true);
 // }
 
+// Keyboard Test
 void kernel_setup(void) {
     load_gdt(&_gdt_gdtr);
     pic_remap();
@@ -150,3 +151,4 @@ void kernel_setup(void) {
 
 //     while (true);
 // }
+
