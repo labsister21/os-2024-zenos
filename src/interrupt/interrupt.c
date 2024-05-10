@@ -4,6 +4,7 @@
 #include "../header/cpu/gdt.h"
 #include "../header/filesystem/fat32.h"
 #include "../header/framebuffer.h"
+#include "header/stdlib/string.h"
 
 struct TSSEntry _interrupt_tss_entry = {
     .ss0  = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
@@ -98,5 +99,13 @@ void syscall(struct InterruptFrame frame) {
         case 9:
             *((int8_t*) frame.cpu.general.ebx) = framebuffer_get_col();
             break;
+        case 20:
+            strsplit((char*) frame.cpu.general.ebx, (char) frame.cpu.general.ecx, (char(*)[256]) frame.cpu.general.edx);
+            break;
+
+        case 21:
+            *((int *) frame.cpu.general.ecx) = strlen((char *) frame.cpu.general.ebx);
+            break; 
+
     }
 }
