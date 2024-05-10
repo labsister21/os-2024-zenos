@@ -1,16 +1,16 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "header/cpu/gdt.h"
-#include "header/kernel-entrypoint.h"
-#include "header/framebuffer.h"
-#include "interrupt/idt.h"
-#include "interrupt/interrupt.h"
+#include "./header/cpu/gdt.h"
+#include "./header/kernel-entrypoint.h"
+#include "./header/framebuffer.h"
+#include "./header/interrupt/idt.h"
+#include "./header/interrupt/interrupt.h"
 #include "./header/driver/disk.h"
-#include "header/filesystem/fat32.h"
+#include "./header/filesystem/fat32.h"
 #include "./header/stdlib/string.h"
-#include "header/keyboard.h"
-#include "header/stdlib/string.h"
-#include "header/memory/paging.h"
+#include "./header/keyboard.h"
+#include "./header/stdlib/string.h"
+#include "./header/memory/paging.h"
 
 // void kernel_setup(void) {
 //     uint32_t a;
@@ -102,6 +102,7 @@
 //     while (true);
 // }
 
+// Keyboard Test
 void kernel_setup(void) {
     load_gdt(&_gdt_gdtr);
     pic_remap();
@@ -110,12 +111,23 @@ void kernel_setup(void) {
     framebuffer_clear();
     framebuffer_set_cursor(0, 0);
         
-    int col = 0;
     keyboard_state_activate();
+    char c;
     while (true) {
-         char c;
-         get_keyboard_buffer(&c);
-         framebuffer_write(0, col++, c, 0xF, 0);
+        
+        get_keyboard_buffer(&c);
+        if(c){
+            if(c == '\n'){
+                framebuffer_set_cursor(framebuffer_get_row()+ 1, 0);
+            }else if(c == '\b'){
+                framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col() - 1);
+                framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), ' ', 0xF, 0);
+            }else{
+                framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, 0xF, 0);
+                framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col()+ 1);
+            }
+            
+        }
     }
 }
 
@@ -150,3 +162,4 @@ void kernel_setup(void) {
 
 //     while (true);
 // }
+

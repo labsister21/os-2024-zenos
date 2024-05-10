@@ -10,6 +10,9 @@
         "paging.h": "c",
         "stdint.h": "c",
         "stddef.h": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "keyboard.h": "c",
+        "portio.h": "c",
+        "idt.h": "c"
     },
 }
