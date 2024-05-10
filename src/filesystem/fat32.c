@@ -140,7 +140,7 @@ int8_t read(struct FAT32DriverRequest request){
                     return 1;
                 }
                 else if(driverState.dir_table_buf.table[i].filesize > request.buffer_size){
-                    return 2;
+                    return driverState.dir_table_buf.table[i].filesize;
                 }
                 else{
                     isFound = true;

@@ -1,6 +1,7 @@
 #include "./header/user-shell.h"
 #include <stdint.h>
 #include "header/filesystem/fat32.h"
+#include "header/stdlib/string.h"
 
 #define strsplit(str,delim,result) syscall(20, (uint32_t) str, (uint32_t) delim, (uint32_t) result)
 #define strlen(str,strlenvar) syscall(21, (uint32_t) str, (uint32_t) &strlenvar, 0)
@@ -82,43 +83,43 @@ void use_keyboard()
     }
 }
 
-void handle_command(){
-    char current_commands[20][256] = {0};
-    char command[20];
-    char arg[20];
+// void handle_command(){
+//     char current_commands[20][256] = {0};
+//     char command[20];
+//     char arg[20];
 
-    strsplit(shellState.commandBuffer,' ', current_commands);
-    memcpy(command,current_commands[0]);
+//     strsplit(shellState.commandBuffer,' ', current_commands);
+//     memcpy(command,current_commands[0]);
 
-    if (memcmp(command,"cd") == 0){
-        memcpy(arg,current_commands[1]);
-        // set cursor location
+//     if (memcmp(command,"cd") == 0){
+//         memcpy(arg,current_commands[1]);
+//         // set cursor location
         
 
-    }
+//     }
 
 
-}
+// }
 
 int main(void)
 {
-    struct ClusterBuffer cl = {0};
+    struct ClusterBuffer cl[2] = {0};
     struct FAT32DriverRequest request = {
         .buf = &cl,
         .name = "shell",
         .ext = "\0\0\0",
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-        .buffer_size = CLUSTER_SIZE,
+        .buffer_size = 0x100000,
     };
     int32_t retcode;
     // if(retcode == 0){
     //     syscall(5, (uint32_t) 'c', 0xF, 0);
 
     // }
-    syscall(0, (uint32_t)&request, (uint32_t)&retcode, 0);
-    if (retcode == 0)
-    {
-        // syscall(5, (uint32_t) 'c', 0xF, 0);
+    syscall(0, (uint32_t) &request, (uint32_t) &retcode, 0);
+    if (retcode == 0){
+        syscall(6, (uint32_t) "owo\n", 4, 0xF);
+
     }
 
     syscall(7, 0, 0, 0);
