@@ -56,8 +56,13 @@ void keyboard_state_deactivate(void){
 }
 
 void get_keyboard_buffer(char *buf){
-    memcpy(buf, keyboard_state.keyboard_buffer, 1);
-    memset(keyboard_state.keyboard_buffer, 0, 1);
+    if(keyboard_state.write_idx != keyboard_state.read_idx){
+        memcpy(buf, &keyboard_state.keyboard_buffer[keyboard_state.read_idx], 1);
+         keyboard_state.read_idx = (keyboard_state.read_idx + 1) % 256;
+    }else{
+        *buf = 0;
+    }
+    // memset(keyboard_state.keyboard_buffer, 0, 256);
 }
 
 bool is_shift(){
@@ -95,7 +100,8 @@ void keyboard_isr(void) {
         if(is_shift() && shifted_char[(uint8_t)mapped_char] != 0 && mapped_char < 97){
             mapped_char = shifted_char[(uint8_t)mapped_char];
         }
-        keyboard_state.keyboard_buffer[0] = mapped_char;
+        keyboard_state.keyboard_buffer[keyboard_state.write_idx] = mapped_char;
+        keyboard_state.write_idx = (keyboard_state.write_idx + 1) % 256;
     }
     pic_ack(IRQ_KEYBOARD);
 }

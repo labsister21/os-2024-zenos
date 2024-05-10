@@ -64,3 +64,34 @@ uint8_t framebuffer_get_row(){
 uint8_t framebuffer_get_col(){
     return framebuffer_get_cursor() % 80;
 }
+
+void putchar(char c, uint32_t color){
+   if(c == '\n'){
+        framebuffer_set_cursor(framebuffer_get_row()+ 1, 0);
+    }else if(c == '\b'){
+        framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col() - 1);
+        framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), ' ', color, 0);
+    }else{
+        framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, color, 0);
+        framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col()+ 1);
+    }
+}
+
+void puts(const char *str, uint32_t count, uint32_t color){
+    uint8_t i = 0;
+    char c = string[i];
+
+    while (c != '\0')
+    {
+        if (c == '\n') {
+            row ++;
+            col = 0;
+            i ++;
+            c = string[i];
+            continue;
+        }
+
+        i++;
+        c = string[i];
+    }
+}
