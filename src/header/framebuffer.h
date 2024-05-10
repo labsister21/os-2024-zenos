@@ -56,4 +56,8 @@ uint8_t framebuffer_get_row();
 
 uint8_t framebuffer_get_col();
 
+void putchar(char c, uint32_t color);
+
+void puts(const char *str, uint32_t count, uint32_t color);
+
 #endif
