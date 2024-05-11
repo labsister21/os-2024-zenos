@@ -51,6 +51,9 @@ int memcmp(const void *s1, const void *s2, size_t n);
  * @return Pointer dest
 */
 void *memmove(void *dest, const void *src, size_t n);
+uint8_t strlen(char* str);
+void strsplit(char* str, char delim, char result[16][256]);
+
 
 uint8_t strlen(char* str);
 
