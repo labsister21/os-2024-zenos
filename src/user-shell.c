@@ -60,6 +60,18 @@ void process_commands()
     char buffer[16][256] = {0};
     char arg[128] = {0};
     strsplit(shellState.commandBuffer, ' ', buffer);
+    int countCommands = 0;
+    for (int z = 0 ; z < 16 ; z++){
+        if (buffer[z][0] != 0){
+            countCommands++;
+        }
+    }
+    if (countCommands > 2){
+        syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+        reset_shell_buffer();
+        print_shell_prompt();
+        return;
+    }
 
     if (strcmp(buffer[0],"cd") == 0){
        
