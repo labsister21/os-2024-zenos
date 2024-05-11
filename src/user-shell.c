@@ -3,8 +3,11 @@
 #include "header/filesystem/fat32.h"
 #include "header/stdlib/string.h"
 
-#define strsplit(str,delim,result) syscall(20, (uint32_t) str, (uint32_t) delim, (uint32_t) result)
-#define strlen(str,strlenvar) syscall(21, (uint32_t) str, (uint32_t) &strlenvar, 0)
+// #define strsplit(str,delim,result) syscall(20, (uint32_t) str, (uint32_t) delim, (uint32_t) result)
+// #define strlen(str,strlenvar) syscall(21, (uint32_t) str, (uint32_t) &strlenvar, 0)
+// #define strcpy(dest,src) syscall(22, (uint32_t) dest, (uint32_t) src, 0)
+#define get_dir(curr_parent_cluster_number, table) syscall(23, (uint32_t) curr_parent_cluster_number, (uint32_t) table, 0)
+
 // #define memcpy()
 
 static struct shellState shellState = {
@@ -53,7 +56,71 @@ void reset_shell_buffer()
 }
 
 void process_commands()
-{
+{      
+    char buffer[16][256] = {0};
+    char arg[128] = {0};
+    strsplit(shellState.commandBuffer, ' ', buffer);
+
+    if (strcmp(buffer[0],"cd") == 0){
+       
+        strcpy(arg,buffer[1]);
+        struct FAT32DirectoryTable table;
+        get_dir( shellState.workDir, &table );
+        // syscall(6,(uint32_t)arg, 0xf, 0);
+        uint32_t parent_cluster_number = table.table[0].cluster_high << 16 | table.table[0].cluster_low;
+        if (strcmp(arg, "..") == 0){
+
+            if (shellState.workDir <= 2){
+
+                reset_shell_buffer();
+                print_shell_prompt();
+                return;
+
+            }
+            char eachPath[16][256] = {0};
+            char finalPath[256] = {0};
+            strsplit(shellState.directory,'/',eachPath);
+            int num_of_path = 0;
+            for (int i = 0 ; i < 16 ; i++){
+                if (eachPath[i][0] != '\0'){
+                    num_of_path++;
+                }
+            }
+            strcat(finalPath,SHELL_DIRECTORY);
+
+            for (int j = 0 ; j < num_of_path ; j++){
+                if (num_of_path != 1){
+                    strcat(finalPath,"/");
+                }
+                strcat(finalPath,eachPath[j+1]);
+            }
+            strncpy(shellState.directory,finalPath,(uint32_t)256);
+            shellState.workDir = parent_cluster_number;
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+
+        }
+        else{
+
+            for (int i = 1;  i < 64 ; i++){
+                if (table.table[i].attribute == ATTR_SUBDIRECTORY){
+                    if (strcmp(table.table[i].name, arg) == 0){
+                    strcat(shellState.directory, "/");
+                    strcat(shellState.directory, arg);
+                    shellState.workDir =  table.table[i].cluster_high << 16 | table.table[i].cluster_low;
+                    reset_shell_buffer();
+                    print_shell_prompt();
+                    return;
+                }
+                }
+
+            }
+
+        }
+    
+    }
+
     reset_shell_buffer();
     print_shell_prompt();
 }
@@ -114,6 +181,8 @@ void use_keyboard()
             shellState.commandBuffer[shellState.bufferIndex] = 0;
             syscall(5, (uint32_t)&currChar, 0, 0);
             process_commands();
+            // syscall(6, (uint32_t)"After process", 0, 0);
+            
         }
         else if (shellState.arrowBufferIndex != 255) // if the arrow buffer is not empty indicating there is a char/string beside it
         {
@@ -147,14 +216,16 @@ void use_keyboard()
 
 int main(void)
 {
-    struct ClusterBuffer cl[2] = {0};
+    // struct ClusterBuffer cl[2] = {0};
     struct FAT32DriverRequest request = {
-        .buf = &cl,
+        .buf = (uint8_t*)0,
         .name = "shell",
         .ext = "\0\0\0",
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
         .buffer_size = 0x100000,
     };
+
+
     int32_t retcode;
     // if(retcode == 0){
     //     syscall(5, (uint32_t) 'c', 0xF, 0);

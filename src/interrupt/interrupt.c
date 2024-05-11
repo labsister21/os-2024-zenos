@@ -101,7 +101,23 @@ void syscall(struct InterruptFrame frame)
     case 10:
         framebuffer_set_cursor((uint8_t)frame.cpu.general.ebx, (uint8_t)frame.cpu.general.ecx);
         break;
+    case 20:
+        strsplit((char*) frame.cpu.general.ebx, (char) frame.cpu.general.ecx,  (char (*)[256]) frame.cpu.general.edx);
+        break;
+    case 21:
+        *((int *) frame.cpu.general.ecx) = strlen((char *) frame.cpu.general.ebx);
+        break;
+    case  22:
+        strcpy((char *) frame.cpu.general.ebx, (char *) frame.cpu.general.ecx);
+        break;
+    
+    case 23 :
+        struct FAT32DirectoryTable *table = (struct FAT32DirectoryTable *)frame.cpu.general.ecx;
+        read_clusters(table, frame.cpu.general.ebx, 1);
+        break;
     }
+    
+
 }
 
 void main_interrupt_handler(struct InterruptFrame frame)

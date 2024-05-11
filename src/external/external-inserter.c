@@ -74,11 +74,23 @@ int main(int argc, char *argv[]) {
         case 2:  puts("Error: Invalid parent cluster"); break;
         default: puts("Error: Unknown error");
     }
+    struct FAT32DriverRequest req2;
+    char* name2 = "love2";
+    
+    memcpy(req2.name,name2,6);
+    req2.ext[0]  = '\0';
+    req2.ext[1]  = '\0';
+    req2.ext[2]  = '\0';
+    req2.parent_cluster_number = 2;
+    req2.buffer_size = 0;
+    write(req2);
 
     // Write image in memory into original, overwrite them
     fptr = fopen(argv[3], "w");
     fwrite(image_storage, 4*1024*1024, 1, fptr);
     fclose(fptr);
+
+
 
     return 0;
 }
