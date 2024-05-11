@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #define SHELL_DIRECTORY "user@zenOS:~"
 #define SHELL_PROMPT "$ "
@@ -34,6 +35,9 @@ struct shellState
     uint8_t bufferIndex;
     struct location startingWriteLoc;
     char directory[256];
+    bool extendedMode;
+    char arrowBuffer[256];
+    int arrowBufferIndex;
 };
 
 void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);

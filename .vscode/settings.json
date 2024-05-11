@@ -14,6 +14,7 @@
         "keyboard.h": "c",
         "portio.h": "c",
         "idt.h": "c",
-        "user-shell.h": "c"
+        "user-shell.h": "c",
+        "stdbool.h": "c"
     },
 }
