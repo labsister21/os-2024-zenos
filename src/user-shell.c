@@ -1,14 +1,15 @@
 #include "./header/user-shell.h"
 #include <stdint.h>
 #include "header/filesystem/fat32.h"
+#include "./header/stdlib/string.h"
 
-// static struct shellState shellState = {
-//     .workDir =  ROOT_CLUSTER_NUMBER,
-//     .commandBuffer = {0},
-//     .bufferIndex = 0,
-//     .startingWriteLoc = {0,0},
-//     .directory = {0}
-// };
+static struct shellState shellState = {
+    .workDir =  ROOT_CLUSTER_NUMBER,
+    .commandBuffer = {0},
+    .bufferIndex = 0,
+    .startingWriteLoc = {0,0},
+    .directory = {0}
+};
 
 
 void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
@@ -22,57 +23,43 @@ void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx) {
 }
 
 void print_shell_prompt(){
-    // char prompt[256] = SHELL_DIRECTORY;
+    char prompt[256] = SHELL_DIRECTORY;
     
-    // strcat(prompt, state.dir_string);
-    // strcat(prompt, SHELL_PROMPT);
+    strcat(prompt, shellState.directory);
+    strcat(prompt, SHELL_PROMPT);
 
-    // syscall(6, )
+    syscall(6, (uint32_t) prompt, BIOS_BLUE, 0);
+
+    uint8_t row = 0, col = 0;
+    syscall(8, (uint32_t) row, 0, 0);
+    syscall(9, (uint32_t) col, 0, 0);
+
+    uint8_t prompt_length = strlen(prompt);
+
+    row += prompt_length/80;
+    col += prompt_length%80;
+    syscall(10, (uint32_t) row, (uint32_t) col, 0);
+
 
 }
 
 void use_keyboard(){
     // char currChar;
-    // syscall(4, (uint32_t) &currChar, 0, 0);
-    // if(currChar){
-    //     if(c == '\b' && shellState.buffer_index == 0){
-    //         // do nothing
-    //     }else if(c == '\b') {
-    //         shellState.bufferIndex--;
-    //         shellState.command_buffer[shellState.bufferIndex] = 0;
-    //         syscall()
+    syscall(4, (uint32_t) &currChar, 0, 0);
+    if(currChar){
+        if(c == '\b' && shellState.buffer_index == 0){
+            // do nothing
+        }else if(c == '\b') {
+            shellState.bufferIndex--;
+            shellState.command_buffer[shellState.bufferIndex] = 0;
+            syscall()
             
-    //     }
-    // }
+        }
+    }
 
 }
 
 int main(void) {
-    // struct ClusterBuffer      cl[2]   = {0};
-    // struct FAT32DriverRequest request = {
-    //     .buf                   = &cl,
-    //     .name                  = "shell",
-    //     .ext                   = "\0\0\0",
-    //     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-    //     .buffer_size           = CLUSTER_SIZE,
-    // };
-    // int32_t retcode;
-    // syscall(0, (uint32_t) &request, (uint32_t) &retcode, 0);
-    // if (retcode == 0)
-    //     syscall(6, (uint32_t) "owo\n", 4, 0xF);
-
-    // char buf;
-    // syscall(7, 0, 0, 0);
-    // while (true) {
-    //     syscall(4, (uint32_t) &buf, 0, 0);
-    //     syscall(5, (uint32_t) &buf, 0xF, 0);
-    // }
-
-    // char prompt[256] = SHELL_DIRECTORY;
-    // while(true){
-    // syscall(6, (uint32_t) prompt, (uint32_t) BIOS_BLUE, 0);
-
-    // }
     struct ClusterBuffer      cl   = {0};
     struct FAT32DriverRequest request = {
         .buf                   = &cl,
@@ -93,7 +80,7 @@ int main(void) {
 
     char buf;
     syscall(7, 0, 0, 0);
-    syscall(6, (uint32_t) "owo\n\0", 4, 0xF);
+    print_shell_prompt();
     while (true) {
         syscall(4, (uint32_t) &buf, 0, 0);
         if(buf){
