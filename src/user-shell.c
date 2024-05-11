@@ -117,6 +117,30 @@ void process_commands()
 
         }
     
+    }else if (strcmp(buffer[0],"mkdir") == 0){
+        struct FAT32DriverRequest req = {0};
+        strcpy(req.name,buffer[1]);
+        req.ext[0]  = '\0';
+        req.ext[1]  = '\0';
+        req.ext[2]  = '\0';
+        req.parent_cluster_number = shellState.workDir;
+        req.buffer_size = 0;
+        int8_t return_code;
+        syscall(24,(uint32_t ) &req, (uint32_t )&return_code,0);
+        if (return_code == -1){
+            syscall(6,(uint32_t)"Not enough space in the current working directory\n",0x4,0);
+        } else if (return_code == 1){
+            strcat(buffer[0],": ");
+            strcat(buffer[0],"cannot create directory `");
+            strcat(buffer[0], buffer[1]);
+            strcat(buffer[0], "`: File exists\n\n");
+            syscall(6,(uint32_t)buffer[0] ,0x4,0);
+        }
+
+    } else{
+        strcat(buffer[0],": ");
+        strcat( buffer[0] ,"command not found\n\n");
+        syscall(6,(uint32_t)buffer[0] ,0x4,0);
     }
 
     reset_shell_buffer();

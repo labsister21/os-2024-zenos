@@ -115,6 +115,10 @@ void syscall(struct InterruptFrame frame)
         struct FAT32DirectoryTable *table = (struct FAT32DirectoryTable *)frame.cpu.general.ecx;
         read_clusters(table, frame.cpu.general.ebx, 1);
         break;
+    case 24 :
+        struct FAT32DriverRequest req = *(struct FAT32DriverRequest*) frame.cpu.general.ebx;
+        *((int8_t*) frame.cpu.general.ecx) = write(req);
+        break;
     }
     
 
