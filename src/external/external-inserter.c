@@ -85,6 +85,18 @@ int main(int argc, char *argv[]) {
     req2.buffer_size = 0;
     write(req2);
 
+    struct FAT32DriverRequest req3;
+    char* name3 = "love3";
+    
+    memcpy(req3.name,name3,6);
+    req3.ext[0]  = '\0';
+    req3.ext[1]  = '\0';
+    req3.ext[2]  = '\0';
+    req3.parent_cluster_number = 6;
+    req3.buffer_size = 0;
+    write(req3);
+
+
     // Write image in memory into original, overwrite them
     fptr = fopen(argv[3], "w");
     fwrite(image_storage, 4*1024*1024, 1, fptr);

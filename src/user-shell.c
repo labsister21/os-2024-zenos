@@ -82,17 +82,15 @@ void process_commands()
             strsplit(shellState.directory,'/',eachPath);
             int num_of_path = 0;
             for (int i = 0 ; i < 16 ; i++){
-                if (eachPath[i][0] != '\0'){
+                if (eachPath[i][0] != 0){
                     num_of_path++;
                 }
             }
-            strcat(finalPath,SHELL_DIRECTORY);
-
-            for (int j = 0 ; j < num_of_path ; j++){
+            for (int j = 1 ; j < num_of_path ; j++){
                 if (num_of_path != 1){
                     strcat(finalPath,"/");
                 }
-                strcat(finalPath,eachPath[j+1]);
+                strcat(finalPath,eachPath[j]);
             }
             strncpy(shellState.directory,finalPath,(uint32_t)256);
             shellState.workDir = parent_cluster_number;
