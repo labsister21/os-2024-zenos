@@ -66,14 +66,14 @@ void process_commands()
             countCommands++;
         }
     }
-    if (countCommands > 2){
-        syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
-        reset_shell_buffer();
-        print_shell_prompt();
-        return;
-    }
 
     if (strcmp(buffer[0],"cd") == 0){
+        if (countCommands > 2){
+            syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
        
         strcpy(arg,buffer[1]);
         struct FAT32DirectoryTable table;
@@ -129,7 +129,49 @@ void process_commands()
 
         }
     
-    }else if (strcmp(buffer[0],"mkdir") == 0){
+    }
+    else if (strcmp(buffer[0],"ls") == 0){
+        if (countCommands > 1){
+            syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
+        struct FAT32DirectoryTable dirTable;
+        get_dir(shellState.workDir,&dirTable);
+
+        uint8_t z;
+        for(z=2;z<64;z++)
+        {
+            if ((strcmp(&dirTable.table[z].name[0],"\0"))){
+                int x;
+                for(x=0;x<8;x++){
+                    if(strcmp(&dirTable.table[z].name[x],"\0")){
+                        syscall(5, (uint32_t) &dirTable.table[z].name[x], 0xF, 0);
+                    }
+                }
+                if (dirTable.table[z].attribute == 0){
+                    char dot[1];
+                    char * dotraw = ".";
+                    memcpy(dot,dotraw,1);
+                    syscall(5, (uint32_t) dot, 0xF, 0);
+                    int y;
+                    for(y=0;y<3;y++){
+                        syscall(5, (uint32_t) &dirTable.table[z].ext[y], 0xF, 0);
+                    }
+                }
+                syscall(6, (uint32_t) "  ", 0xF, 0);
+            }
+        }
+        syscall(6, (uint32_t)"\n\n",0xF,0);
+    }
+    else if (strcmp(buffer[0],"mkdir") == 0){
+        if (countCommands > 2){
+            syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
         struct FAT32DriverRequest req = {0};
         strcpy(req.name,buffer[1]);
         req.ext[0]  = '\0';
@@ -149,7 +191,49 @@ void process_commands()
             syscall(6,(uint32_t)buffer[0] ,0x4,0);
         }
 
-    } else{
+    } 
+    else if (strcmp(buffer[0],"cat") == 0){
+        if (countCommands > 2){
+            syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
+        // parse file dengan extension
+        char splitFilenameExt[16][256] = {0};
+        strsplit(buffer[1],'.',splitFilenameExt);
+        int countSplitResult = 0;
+        for (int i = 0 ; i < 16 ; i++){
+            if (splitFilenameExt[i][0] != 0){
+                countSplitResult++;
+            }
+        }
+        if (countSplitResult > 2){
+            // invalid file
+            syscall(6, (uint32_t) "cat: ", 0x4, 0);
+            syscall(6, (uint32_t) buffer[1], 0x4, 0);
+            syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+        }
+        int8_t retcode;
+        char outText[4*512*512];
+        struct FAT32DriverRequest requestReadFile = {
+        .buf =  outText,
+        };
+        memcpy(requestReadFile.name,splitFilenameExt[0],8);
+        memcpy(requestReadFile.ext,splitFilenameExt[1],3);
+        requestReadFile.parent_cluster_number = shellState.workDir;
+        requestReadFile.buffer_size = 4*512*512;
+        syscall(0, (uint32_t) &requestReadFile, (uint32_t) &retcode, 0);
+        if(retcode == 0){
+            syscall(6, (uint32_t)requestReadFile.buf,0xF,0);   
+            syscall(6, (uint32_t) "\n\n",0xF,0);   
+        }else{
+            syscall(6, (uint32_t) "cat: ", 0x4, 0);
+            syscall(6, (uint32_t) buffer[1], 0x4, 0);
+            syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+        }
+    }
+    else{
         strcat(buffer[0],": ");
         strcat( buffer[0] ,"command not found\n\n");
         syscall(6,(uint32_t)buffer[0] ,0x4,0);
@@ -266,7 +350,6 @@ void use_keyboard()
 
 int main(void)
 {
-    // struct ClusterBuffer cl[2] = {0};
     struct FAT32DriverRequest request = {
         .buf = (uint8_t*)0,
         .name = "shell",
@@ -277,16 +360,12 @@ int main(void)
 
 
     int32_t retcode;
-    // if(retcode == 0){
-    //     syscall(5, (uint32_t) 'c', 0xF, 0);
-
-    // }
     syscall(0, (uint32_t) &request, (uint32_t) &retcode, 0);
     if (retcode == 0){
         syscall(6, (uint32_t) "owo\n", 4, 0xF);
 
     }
-
+    
     syscall(7, 0, 0, 0);
     print_shell_prompt();
     while (true)

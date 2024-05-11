@@ -257,7 +257,9 @@ int8_t write(struct FAT32DriverRequest request){
             }
         }
         write_clusters(&driverState.fat_table,1,1);
+        driverState.dir_table_buf.table->user_attribute = UATTR_NOT_EMPTY;
     }
+
     write_clusters(driverState.dir_table_buf.table,request.parent_cluster_number,1);
     return 0;
 }
