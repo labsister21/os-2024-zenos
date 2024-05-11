@@ -220,7 +220,23 @@ void use_keyboard()
         }
         else if (shellState.arrowBufferIndex != 255) // if the arrow buffer is not empty indicating there is a char/string beside it
         {
-                }
+            char temp[256];
+            int i = 0;
+            temp[i] = currChar;
+            int arrowBufferLength = 255 - shellState.arrowBufferIndex;
+            for(int j = 0; j < arrowBufferLength; j++){
+                // inserting arrow buffer into a temp
+                shellState.arrowBufferIndex++;
+                i++;
+                temp[i] = shellState.arrowBuffer[shellState.arrowBufferIndex];
+
+                // inserting the arrow buffer into the command buffer
+                shellState.commandBuffer[shellState.bufferIndex] = temp[i];
+                shellState.bufferIndex++;
+            }
+            temp[i] = '\0';
+            syscall(6, (uint32_t) temp, 0xF, 0);
+        }
         else
         {
             shellState.commandBuffer[shellState.bufferIndex] = currChar;
