@@ -255,4 +255,8 @@ int8_t write(struct FAT32DriverRequest request);
  */
 int8_t delete(struct FAT32DriverRequest request);
 
+
+// search file in parent cluster number
+int8_t search_file_folder(uint32_t parent_cluster_number, struct FAT32DriverRequest entry);
+
 #endif

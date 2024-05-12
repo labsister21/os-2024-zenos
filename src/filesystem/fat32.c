@@ -140,7 +140,7 @@ int8_t read(struct FAT32DriverRequest request){
                     return 1;
                 }
                 else if(driverState.dir_table_buf.table[i].filesize > request.buffer_size){
-                    return driverState.dir_table_buf.table[i].filesize;
+                    return 2;
                 }
                 else{
                     isFound = true;
@@ -347,4 +347,20 @@ int8_t delete(struct FAT32DriverRequest request){
     }else{
         return -1;
     }
+}
+
+int8_t search_file_folder(uint32_t parent_cluster_number, struct FAT32DriverRequest entry){
+
+    read_clusters(&driverState.dir_table_buf, parent_cluster_number, 1);
+    uint8_t start = 2;
+    if (parent_cluster_number == 2){
+        start = 3;
+    }
+    for (uint8_t i = start ; i < 64 ; i++){
+        if (memcmp(driverState.dir_table_buf.table[i].name, entry.name,8) == 0 && (memcmp(driverState.dir_table_buf.table[i].ext , entry.ext, 3) == 0)){
+            return i;
+        }
+    }
+    return -1;
+
 }

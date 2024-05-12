@@ -122,6 +122,10 @@ void syscall(struct InterruptFrame frame)
         struct FAT32DirectoryTable *dirTable = (struct FAT32DirectoryTable *)frame.cpu.general.ecx;
         write_clusters(dirTable, frame.cpu.general.ebx, 1);
         break;
+    
+    case 50 :   
+        struct FAT32DriverRequest request = *(struct FAT32DriverRequest *) frame.cpu.general.ecx;
+        *((int8_t *) frame.cpu.general.edx) = search_file_folder((uint32_t) frame.cpu.general.ebx, request);
     }
     
 

@@ -32,6 +32,31 @@ void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx)
     __asm__ volatile("int $0x30");
 }
 
+void deleteAll(uint32_t current_cluster_number,int* retcode){
+    struct FAT32DirectoryTable dirTable;
+    syscall(23,current_cluster_number, (uint32_t) &dirTable, 0 );
+    int x;
+    for (x = 2 ; x < 64 ; x++){
+        if (dirTable.table[x].name[0] != '\0'){
+            char outText[4*512*512];
+            struct FAT32DriverRequest req = {
+                .buf                   = outText,
+
+            };
+            req.parent_cluster_number = current_cluster_number;
+            req.buffer_size = dirTable.table[x].filesize;
+            memcpy(req.name,dirTable.table[x].name, 8);
+            memcpy(req.ext,dirTable.table[x].ext,3);
+            if (dirTable.table[x].attribute  == ATTR_SUBDIRECTORY){
+                uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
+                deleteAll(nextClusterNumber,retcode);
+                }
+            syscall(3, (uint32_t) &req, (uint32_t) retcode,0);
+        }
+
+    }
+}
+
 void finPath(char* destination, uint32_t current_cluster_number, char path[256], bool* found){
     struct FAT32DirectoryTable dirTable;
     get_dir(current_cluster_number,&dirTable);
@@ -513,7 +538,7 @@ void process_commands()
         if (shellState.workDir == 2){
             startEntry = 3;
         }
-        if (result[1] != 0 && strlen(result[1]) <= 3){
+        if (result[1][0] != '\0' && strlen(result[1]) <= 3){
             // deleting file
             // searching for file with same extension
             for (int i = startEntry ; i < 64 ; i++){
@@ -543,14 +568,183 @@ void process_commands()
 
         } else {
             // delete folder
+            //  for (int i = startEntry ; i < 64 ; i++){
+            //     if ( (memcmp(dirTable.table[i].name ,result[0],8) == 0) && (memcmp(dirTable.table[i].ext, result[1],3) == 0) && (dirTable.table[i].name[0] != '\0')){
+            //         // struct ClusterBuffer cl = {0};
+            //         char outText[4*512*512];
+            //         struct FAT32DriverRequest req = {
+            //             .buf                   = outText,
+
+            //         };
+            //         req.parent_cluster_number = shellState.workDir;
+            //         req.buffer_size = dirTable.table[i].filesize;
+            //         memcpy(req.name,dirTable.table[i].name, 8);
+            //         memcpy(req.ext,dirTable.table[i].ext,3);
+
+            //         int retcode;
+            //         uint32_t nextClusterNumber = dirTable.table[i].cluster_high << 16 | dirTable.table[i].cluster_low;
+            //         deleteAll(nextClusterNumber,&retcode);
+            //         syscall(3, (uint32_t) &req, (uint32_t) &retcode,0);
+            //         if (retcode == 0){
+            //             syscall(6, (uint32_t)"Success!\n\n",0xf,0);
+            //         } else{
+            //             syscall(6, (uint32_t)"Fail..", 0x4,0);
+            //         }
+            //         found = true;
+            //         break;
+            //     }
+            // }
+             syscall(6, (uint32_t)"Can't delete folder\n\n", 0x4,0);
+            
         }
         if (!found){
             syscall(6, (uint32_t)"File/Directory does not exists\n\n", 0x4,0);
         }
 
-    }
+    } else if (strcmp(buffer[0] ,"cp") == 0){
+        // do copy
+        if ( countCommands != 3){
+            syscall(6,(uint32_t)"cp: invalid arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
 
-    else{
+        // splitting first path and second path
+        char path1[16][256];
+        char path2[16][256];
+        strsplit(buffer[1],'/',path1);
+        strsplit(buffer[2],'/',path2);
+
+        // search for file, note that extension is only at the end
+        char outText[4*512*512];
+        struct FAT32DriverRequest req = {
+            .buf                   = outText,
+            .buffer_size           = 4*512*512,
+            .name                  = "\0\0\0\0\0\0\0",
+            .ext                   = "\0\0\0",
+         };
+
+        req.parent_cluster_number = ROOT_CLUSTER_NUMBER;
+        uint8_t i = 0;
+
+        // uint32_t prev_dir = ROOT_CLUSTER_NUMBER;
+        uint32_t curr_dir = ROOT_CLUSTER_NUMBER;
+        int8_t retcode = -1;
+        while (path1[i][0] != '\0' && i < 15){
+            char fileName[16][256] = {0};
+
+            // possible seg fault
+            // if final destionation, in file/folder format
+            if (path1[i + 1][0] == '\0' ){
+                strsplit(path1[i],'.',fileName);
+                if (fileName[1][0] == '\0'){
+                    syscall(6, (uint32_t)"cannot copy a folder!\n\n",0x4,0);
+                }
+            }
+            else {
+                memcpy(fileName[0],path1[i],8);
+            }
+            memcpy(req.name,fileName[0],8);
+            memcpy(req.ext,fileName[1],3);
+            syscall(50,curr_dir, (uint32_t)&req, (uint32_t)&retcode);
+
+            if (retcode == -1){
+                // unable to find it
+                break;
+            } else {
+                struct FAT32DirectoryTable table_dir;
+                get_dir(curr_dir,&table_dir);
+                if (table_dir.table[retcode].attribute == ATTR_SUBDIRECTORY){
+                    // currently is folder, find next folder
+                    req.parent_cluster_number = table_dir.table[retcode].cluster_high << 16 | table_dir.table[retcode].cluster_low;
+                    // prev_dir = curr_dir;
+                    curr_dir = req.parent_cluster_number;
+                    i++;
+
+                } else{
+                    // file found
+                    break;
+                }
+            }
+        }
+        if (retcode == -1){
+            syscall(6, (uint32_t)"file/folder does not exists\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+
+        }
+        else {
+            // find location for next copy process
+            char outText[4*512*512];
+            struct FAT32DriverRequest reqTarget = {
+                .buf                   = outText,
+                .buffer_size           = CLUSTER_SIZE,
+                .name                  = "\0\0\0\0\0\0\0",
+                .ext                   = "\0\0\0",
+            };
+            reqTarget.parent_cluster_number = ROOT_CLUSTER_NUMBER;
+            uint8_t j = 0;
+            int8_t targetRetcode = -1;
+            uint8_t targetCurrDir = ROOT_CLUSTER_NUMBER;
+            // bool copy_to_folder = false;
+            while (path2[j][0] != '\0' && j < 15){
+                memcpy(reqTarget.name,path2[j],8);
+                syscall(50,targetCurrDir, (uint32_t)&reqTarget, (uint32_t)&targetRetcode);
+                if (targetRetcode == -1){
+                    syscall(6, (uint32_t)"target file/folder does not exists\n\n",0x4,0);
+                    reset_shell_buffer();
+                    print_shell_prompt();
+                    return;
+                }
+                else {
+                    struct FAT32DirectoryTable table_dir;
+                    get_dir(targetCurrDir, &table_dir);
+                    if (table_dir.table[targetRetcode].attribute == ATTR_SUBDIRECTORY){
+                        targetCurrDir = table_dir.table[targetRetcode].cluster_high << 16 | table_dir.table[targetRetcode].cluster_low;
+                        reqTarget.parent_cluster_number = targetCurrDir;
+                        j++;
+                    } 
+                    else{
+                        syscall(6, (uint32_t)"Something went wrong \n\n",0x4,0);
+                        reset_shell_buffer();
+                        print_shell_prompt();
+                        return;
+                    }
+                }
+            }
+            int8_t returnCodeCopy;
+            
+            syscall(0,(uint32_t)&req,(uint32_t)&returnCodeCopy,0);
+            if (returnCodeCopy != 0){
+                syscall(6, (uint32_t)"Something went wrong with the copying process! \n\n",0x4,0);
+                reset_shell_buffer();
+                print_shell_prompt();
+                return;
+            }
+            uint32_t filesize;
+            filesize = strlen(req.buf);
+            reqTarget.buffer_size = filesize;
+            memcpy(reqTarget.buf, req.buf, reqTarget.buffer_size);
+            memcpy(reqTarget.name, req.name, 8);
+            memcpy(reqTarget.ext,req.ext,3);
+            syscall(24,(uint32_t ) &reqTarget, (uint32_t )&returnCodeCopy,0);
+            if (returnCodeCopy != 0){
+                syscall(6, (uint32_t)"Something went wrong with the writing process! \n\n",0x4,0);
+                reset_shell_buffer();
+                print_shell_prompt();
+                return;
+            } else{
+                syscall(6, (uint32_t)"Success ! \n\n",0xf,0);
+                reset_shell_buffer();
+                print_shell_prompt();
+                return;
+            }
+
+        
+        } 
+    }else{
         strcat(buffer[0],": ");
         strcat( buffer[0] ,"command not found\n\n");
         syscall(6,(uint32_t)buffer[0] ,0x4,0);

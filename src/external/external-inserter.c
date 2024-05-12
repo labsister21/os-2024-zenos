@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     req3.ext[0]  = '\0';
     req3.ext[1]  = '\0';
     req3.ext[2]  = '\0';
-    req3.parent_cluster_number = 8;
+    req3.parent_cluster_number = 10;
     req3.buffer_size = 0;
     write(req3);
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
         .buf = file2content,
         .name = "file2",
         .ext = "txt",
-        .parent_cluster_number = 9,
+        .parent_cluster_number = 11,
         .buffer_size = sizeof(file2content),
     };
     write(requestWriteFile2);
