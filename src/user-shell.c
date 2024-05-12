@@ -32,7 +32,7 @@ void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx)
     __asm__ volatile("int $0x30");
 }
 
-void finPath(char* destination, uint32_t current_cluster_number, char path[256]){
+void finPath(char* destination, uint32_t current_cluster_number, char path[256], bool* found){
     struct FAT32DirectoryTable dirTable;
     get_dir(current_cluster_number,&dirTable);
     int x;
@@ -52,6 +52,7 @@ void finPath(char* destination, uint32_t current_cluster_number, char path[256])
 
             }
             syscall(6,(uint32_t)"\n",0xf,0);
+            *found = true;
         }
         if (dirTable.table[x].attribute  == ATTR_SUBDIRECTORY ){
              char temp[256];
@@ -59,7 +60,7 @@ void finPath(char* destination, uint32_t current_cluster_number, char path[256])
             strcat(temp, "/");
             strcat(temp,dirTable.table[x].name);
             uint32_t next_number = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
-            finPath(destination,next_number,temp);
+            finPath(destination,next_number,temp,found);
         }
     }
 
@@ -103,7 +104,7 @@ void process_commands()
 
     if (strcmp(buffer[0],"cd") == 0){
         if (countCommands > 2){
-            syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+            syscall(6,(uint32_t)"cd: too many arguments\n\n",0x4,0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -150,16 +151,21 @@ void process_commands()
             for (int i = 1;  i < 64 ; i++){
                 if (table.table[i].attribute == ATTR_SUBDIRECTORY){
                     if (strcmp(table.table[i].name, arg) == 0){
-                    strcat(shellState.directory, "/");
-                    strcat(shellState.directory, arg);
-                    shellState.workDir =  table.table[i].cluster_high << 16 | table.table[i].cluster_low;
-                    reset_shell_buffer();
-                    print_shell_prompt();
-                    return;
+                        strcat(shellState.directory, "/");
+                        strcat(shellState.directory, arg);
+                        shellState.workDir =  table.table[i].cluster_high << 16 | table.table[i].cluster_low;
+                        reset_shell_buffer();
+                        print_shell_prompt();
+                        return;
+                    }
                 }
-                }
-
             }
+            char message[256];
+            strcpy(message, "cd: ");
+            strcat(message,buffer[1]);
+            strcat(message,": No such directory\n\n");
+            syscall(6,(uint32_t)message,0x4,0);
+
 
         }
     
@@ -459,7 +465,22 @@ void process_commands()
         }
     } else if (strcmp(buffer[0],"find") == 0){
         char temp[256] = {0};
-        finPath(buffer[1],2,temp);
+        bool found = false;
+        if (countCommands > 2){
+            syscall(6,(uint32_t)"find: too many arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
+       
+        finPath(buffer[1],2,temp, &found);
+        if (!found){
+            char message[256];
+            strcpy(message, "find: ");
+            strcat(message,buffer[1]);
+            strcat(message,": No such file/directory\n\n");
+            syscall(6, (uint32_t)message,0x4,0);
+        }
 
 
     }
