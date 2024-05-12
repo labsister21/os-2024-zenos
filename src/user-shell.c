@@ -7,6 +7,7 @@
 // #define strlen(str,strlenvar) syscall(21, (uint32_t) str, (uint32_t) &strlenvar, 0)
 // #define strcpy(dest,src) syscall(22, (uint32_t) dest, (uint32_t) src, 0)
 #define get_dir(curr_parent_cluster_number, table) syscall(23, (uint32_t) curr_parent_cluster_number, (uint32_t) table, 0)
+#define set_dir(curr_parent_cluster_number, table) syscall(25, (uint32_t) curr_parent_cluster_number, (uint32_t) table, 0)
 
 // #define memcpy()
 
@@ -231,6 +232,197 @@ void process_commands()
             syscall(6, (uint32_t) "cat: ", 0x4, 0);
             syscall(6, (uint32_t) buffer[1], 0x4, 0);
             syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+        }
+    }
+    else if (strcmp(buffer[0],"mv") == 0){
+        if (countCommands > 3){
+            syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
+        uint8_t countSplitParam1 = 0;
+        uint8_t countSplitParam2 = 0;
+        char splitFilenameExt1[16][256] = {0};
+        char splitFilenameExt2[16][256] = {0};
+        uint8_t param1ExtLength = 0;
+        uint8_t param2ExtLength = 0;
+
+        char eachPathParam1[16][256] = {0};
+        strsplit(buffer[1],'/',eachPathParam1);
+        int countPathParam1 = 0;
+        for (int i = 0 ; i < 16 ; i++){
+            if (eachPathParam1[i][0] != 0){
+                countPathParam1++;
+            }
+        }
+
+        char eachPathParam2[16][256] = {0};
+        strsplit(buffer[2],'/',eachPathParam2);
+        int countPathParam2 = 0;
+        for (int i = 0 ; i < 16 ; i++){
+            if (eachPathParam2[i][0] != 0){
+                countPathParam2++;
+            }
+        }
+
+        // cek apakah buffer[1] merupakan nama file
+        strsplit(buffer[1],'.',splitFilenameExt1);
+        for (int i = 0 ; i < 16 ; i++){
+            if (splitFilenameExt1[i][0] != 0){
+                countSplitParam1++;
+            }else{
+                break;
+            }
+        }
+        if (countSplitParam1 == 2){
+            for(int y=0;y<256;y++){
+                if(splitFilenameExt1[1][y] != 0){
+                    param1ExtLength++;
+                }else{
+                    break;
+                }
+            }
+        }
+
+        // cek apakah buffer[2] merupakan nama file
+        strsplit(buffer[2],'.',splitFilenameExt2);
+        for (int i = 0 ; i < 16 ; i++){
+            if (splitFilenameExt2[i][0] != 0){
+                countSplitParam2++;
+            }
+        }
+        if (countSplitParam2 == 2){
+            for(int y=0;y<256;y++){
+                if(splitFilenameExt2[1][y] != 0){
+                    param2ExtLength++;
+                }else{
+                    break;
+                }
+            }
+        }
+        bool isFound = false;
+        // Rename file
+        if(countSplitParam1 == 2 && countSplitParam2 == 2 && param1ExtLength <= 3 && param2ExtLength <= 3 && countPathParam1 == 1 && countPathParam2 == 1){
+            struct FAT32DirectoryTable dirTable;
+            get_dir(shellState.workDir,&dirTable);
+            int x;
+            for(x=2;x<64;x++){
+                if(memcmp(dirTable.table[x].name, splitFilenameExt1[0], 8) == 0 && memcmp(dirTable.table[x].ext, splitFilenameExt1[1], 3) == 0){
+                    memcpy(dirTable.table[x].name, splitFilenameExt2[0],8);
+                    memcpy(dirTable.table[x].ext, splitFilenameExt2[1],3);
+                    isFound = true;
+                    break;
+                };
+            }
+            if(isFound){
+                set_dir(shellState.workDir, &dirTable);
+            }else{
+                syscall(6, (uint32_t) "mv: ", 0x4, 0);
+                syscall(6, (uint32_t) buffer[1], 0x4, 0);
+                syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+            }
+        }else{
+           // Memindahkan file/directory
+
+           // Ambil directory entry dari file/folder yang ingin dipindah
+           struct FAT32DirectoryEntry tempDirEntry;
+            uint32_t currParentCluster = ROOT_CLUSTER_NUMBER;
+            char currName[8];
+            char currExt[3];
+            struct FAT32DirectoryTable tempDirTable;
+            for (int j = 0 ; j < countPathParam1 ; j++){
+                isFound = false;
+                get_dir(currParentCluster, &tempDirTable);
+                memcpy(currExt,"\0\0\0",3);
+                if(j == countPathParam1-1){
+                    char splitFilenameExtTemp[16][256] = {0};
+                    strsplit(eachPathParam1[j], '.', splitFilenameExtTemp);
+                    int countSplitResult = 0;
+                    for(int i=0;i<16;i++){
+                        if(splitFilenameExtTemp[i][0] == '\0'){
+                            break;
+                        }else{
+                            countSplitResult++;
+                        }
+                    }
+                    if(countSplitResult == 2){
+                        int countExtLengthTemp = 0;
+                        for(int y=0; y<256;y++){
+                            if(splitFilenameExtTemp[1][y] == '\0'){
+                                break;
+                            }else{
+                                countExtLengthTemp++;
+                            }
+                        }
+                        if(countExtLengthTemp <= 3){
+                            memcpy(currExt, splitFilenameExtTemp[1],3);
+                            memcpy(currName, splitFilenameExtTemp[0],8);
+                        }else{
+                            memcpy(currName,splitFilenameExtTemp[0],8);
+                        }
+                    }else{
+                        memcpy(currName,splitFilenameExtTemp[0],8);
+                    }
+                }else{
+                    memcpy(currName, eachPathParam1[j],8);
+                }
+                for(uint8_t i = 2; i<64 ;i++){
+                    if(memcmp(tempDirTable.table[i].name,currName,8) == 0 && memcmp(tempDirTable.table[i].ext, currExt,3) == 0){
+                        if(j == countPathParam1-1){
+                            memcpy(&tempDirEntry, &tempDirTable.table[i],32);
+                            memset(&tempDirTable.table[i],0,32);
+                            set_dir(currParentCluster, &tempDirTable);
+                        }else{
+                            currParentCluster = tempDirTable.table[i].cluster_high << 16 | tempDirTable.table[i].   cluster_low;
+                        }
+                        isFound = true;
+                        break;
+                    }
+                }
+                if(!isFound){
+                    break;
+                }
+            }
+
+            if(!isFound){
+                syscall(6, (uint32_t) "mv: ", 0x4, 0);
+                syscall(6, (uint32_t) buffer[1], 0x4, 0);
+                syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+            }else{
+                // tempDirEntry sudah didapatkan, selanjutnya mencari cluster number dari tempat tujuan mv
+                currParentCluster = ROOT_CLUSTER_NUMBER;
+                for (int j = 0 ; j < countPathParam2 ; j++){
+                    isFound = false;
+                    get_dir(currParentCluster, &tempDirTable);
+                    memcpy(currExt,"\0\0\0",3);
+                    memcpy(currName, eachPathParam2[j],8);
+                    for(uint8_t i = 2; i<64 ;i++){
+                        if(memcmp(tempDirTable.table[i].name,currName,8) == 0 && memcmp(tempDirTable.table[i].ext, currExt,3) == 0){
+                            currParentCluster = tempDirTable.table[i].cluster_high << 16 | tempDirTable.table[i].   cluster_low;
+                            isFound = true;
+                            break;
+                        }
+                    }
+                    if(!isFound){
+                        break;
+                    }
+                }
+                if(!isFound){
+                    syscall(6, (uint32_t) "mv: ", 0x4, 0);
+                    syscall(6, (uint32_t) buffer[1], 0x4, 0);
+                    syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+                }else{
+                    get_dir(currParentCluster, &tempDirTable);
+                    for(int x=2;x<64;x++){
+                        if(tempDirTable.table[x].name[0] == '\0'){
+                            memcpy(&tempDirTable.table[x],&tempDirEntry,32);
+                            set_dir(currParentCluster, &tempDirTable);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     else{
