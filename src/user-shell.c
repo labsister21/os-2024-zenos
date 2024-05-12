@@ -47,7 +47,7 @@ void finPath(char* destination, uint32_t current_cluster_number, char path[256])
             if (dirTable.table[x].filesize > 0){
                 syscall(6,(uint32_t)".",0xf,0);
                 for (int i = 0 ; i < 3 ; i++){
-                    syscall(5,(uint32_t)dirTable.table[x].ext[i],0xf,0);
+                    syscall(5,(uint32_t)&dirTable.table[x].ext[i],0xf,0);
                 }
 
             }
