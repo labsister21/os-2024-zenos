@@ -480,7 +480,11 @@ void process_commands()
             strcat(message,buffer[1]);
             strcat(message,": No such file/directory\n\n");
             syscall(6, (uint32_t)message,0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
         }
+        syscall(6,(uint32_t)"\n",0xf,0);
 
 
     }
