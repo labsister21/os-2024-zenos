@@ -234,7 +234,13 @@ void process_commands()
     } 
     else if (strcmp(buffer[0],"cat") == 0){
         if (countCommands > 2){
-            syscall(6,(uint32_t)"too many arguments\n\n",0x4,0);
+            syscall(6,(uint32_t)"cat: too many arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
+        if (countCommands < 2){
+            syscall(6,(uint32_t)"cat: too few arguments\n\n",0x4,0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -472,6 +478,15 @@ void process_commands()
             print_shell_prompt();
             return;
         }
+
+        if (countCommands < 2){
+            syscall(6,(uint32_t)"find: too few arguments\n\n",0x4,0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
+        
+        
        
         finPath(buffer[1],2,temp, &found);
         if (!found){
