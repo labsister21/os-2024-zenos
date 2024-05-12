@@ -32,6 +32,39 @@ void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx)
     __asm__ volatile("int $0x30");
 }
 
+void finPath(char* destination, uint32_t current_cluster_number, char path[256]){
+    struct FAT32DirectoryTable dirTable;
+    get_dir(current_cluster_number,&dirTable);
+    int x;
+    for (x = 2 ; x < 64 ; x++){
+        if (strcmp(dirTable.table[x].name , destination) == 0){
+            char temp[256];
+            strncpy(temp,path,256);
+            strcat(temp, "/");
+            
+            strcat(temp,dirTable.table[x].name);
+            syscall(6,(uint32_t)temp,0xf,0);
+            if (dirTable.table[x].filesize > 0){
+                syscall(6,(uint32_t)".",0xf,0);
+                for (int i = 0 ; i < 3 ; i++){
+                    syscall(5,(uint32_t)dirTable.table[x].ext[i],0xf,0);
+                }
+
+            }
+            syscall(6,(uint32_t)"\n",0xf,0);
+        }
+        if (dirTable.table[x].attribute  == ATTR_SUBDIRECTORY ){
+             char temp[256];
+            strncpy(temp,path,256);
+            strcat(temp, "/");
+            strcat(temp,dirTable.table[x].name);
+            uint32_t next_number = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
+            finPath(destination,next_number,temp);
+        }
+    }
+
+}
+
 void print_shell_prompt()
 {
     char prompt[256] = SHELL_DIRECTORY;
@@ -424,6 +457,11 @@ void process_commands()
                 }
             }
         }
+    } else if (strcmp(buffer[0],"find") == 0){
+        char temp[256] = {0};
+        finPath(buffer[1],2,temp);
+
+
     }
     else{
         strcat(buffer[0],": ");
