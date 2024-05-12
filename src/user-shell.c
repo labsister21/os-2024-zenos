@@ -487,7 +487,54 @@ void process_commands()
         syscall(6,(uint32_t)"\n",0xf,0);
 
 
+    } else if (strcmp(buffer[0] ,"rm") == 0){
+        bool found = false;
+        struct FAT32DirectoryTable dirTable;
+        get_dir(shellState.workDir,&dirTable);
+        // determining if file or not
+        char result[16][256] = {0};
+        strsplit(buffer[1],'.',result);
+        uint32_t startEntry = 2;
+        if (shellState.workDir == 2){
+            startEntry = 3;
+        }
+        if (result[1] != 0 && strlen(result[1]) <= 3){
+            // deleting file
+            // searching for file with same extension
+            for (int i = startEntry ; i < 64 ; i++){
+                if ( (memcmp(dirTable.table[i].name ,result[0],8) == 0) && (memcmp(dirTable.table[i].ext, result[1],3) == 0) && (dirTable.table[i].name[0] != '\0')){
+                    // struct ClusterBuffer cl = {0};
+                    char outText[4*512*512];
+                    struct FAT32DriverRequest req = {
+                        .buf                   = outText,
+
+                    };
+                    req.parent_cluster_number = shellState.workDir;
+                    req.buffer_size = dirTable.table[i].filesize;
+                    memcpy(req.name,dirTable.table[i].name, 8);
+                    memcpy(req.ext,dirTable.table[i].ext,3);
+
+                    int retcode;
+                    syscall(3, (uint32_t) &req, (uint32_t) &retcode,0);
+                    if (retcode == 0){
+                        syscall(6, (uint32_t)"Success!\n\n",0xf,0);
+                    } else{
+                        syscall(6, (uint32_t)"Fail..", 0x4,0);
+                    }
+                    found = true;
+                    break;
+                }
+            }
+
+        } else {
+            // delete folder
+        }
+        if (!found){
+            syscall(6, (uint32_t)"File/Directory does not exists\n\n", 0x4,0);
+        }
+
     }
+
     else{
         strcat(buffer[0],": ");
         strcat( buffer[0] ,"command not found\n\n");
