@@ -93,7 +93,7 @@ void putchar(char c, uint32_t color)
     }
     else
     {
-        framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, 0xF, 0);
+        framebuffer_write(framebuffer_get_row(), framebuffer_get_col(), c, color, 0);
         framebuffer_set_cursor(framebuffer_get_row(), framebuffer_get_col() + 1);
     }
 }
