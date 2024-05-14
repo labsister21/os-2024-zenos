@@ -581,8 +581,6 @@ void process_commands()
             return;
         }
         
-        
-       
         finPath(buffer[1],2,temp, &found);
         if (!found){
             char message[256];
@@ -673,7 +671,7 @@ void process_commands()
 
     } else if (strcmp(buffer[0] ,"cp") == 0){
         // do copy
-        if ( countCommands != 3){
+        if ( countCommands > 3 || countCommands < 2){
             syscall(6,(uint32_t)"cp: invalid arguments\n\n",0x4,0);
             reset_shell_buffer();
             print_shell_prompt();
@@ -756,7 +754,7 @@ void process_commands()
             };
             reqTarget.parent_cluster_number = ROOT_CLUSTER_NUMBER;
             uint8_t j = 0;
-            int8_t targetRetcode = -1;
+            int8_t targetRetcode = 0;
             uint8_t targetCurrDir = ROOT_CLUSTER_NUMBER;
             // bool copy_to_folder = false;
             while (path2[j][0] != '\0' && j < 15){
