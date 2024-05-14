@@ -38,11 +38,20 @@ struct shellState
     bool extendedMode;
     char arrowBuffer[256];
     int arrowBufferIndex;
+    char recentsCommand[30][256];
+    int recentsWriteIndex;
+    int recentsReadIndex;
+    bool hasWritten;
+    char singleLineCommandBuffer[256];
 };
 
 void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);
 
 void reset_shell_buffer();
+
+void shift_string(int from, int to, char *str, int size);
+
+void clean_command(char *str);
 
 void process_commands();
 

@@ -101,6 +101,9 @@ void syscall(struct InterruptFrame frame)
     case 10:
         framebuffer_set_cursor((uint8_t)frame.cpu.general.ebx, (uint8_t)frame.cpu.general.ecx);
         break;
+    case 11:
+        framebuffer_clear();
+        break;
     case 20:
         strsplit((char*) frame.cpu.general.ebx, (char) frame.cpu.general.ecx,  (char (*)[256]) frame.cpu.general.edx);
         break;
