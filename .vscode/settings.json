@@ -15,6 +15,7 @@
         "portio.h": "c",
         "idt.h": "c",
         "user-shell.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "process.h": "c"
     },
 }
