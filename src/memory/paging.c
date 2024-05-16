@@ -22,7 +22,8 @@ __attribute__((aligned(0x1000))) struct PageDirectory _paging_kernel_page_direct
     }};
 
 static struct PageManagerState page_manager_state = {
-    .page_frame_map = {[0 ... PAGE_FRAME_MAX_COUNT - 1] = FALSE},
+    .page_frame_map = {[0 ... PAGE_FRAME_MAX_COUNT - 1] = false},
+    .free_page_frame_count = PAGE_FRAME_MAX_COUNT,
     // TODO: Fill in if needed ...
 };
 
@@ -64,7 +65,60 @@ bool paging_allocate_check(uint32_t amount)
     return false;
 }
 
-bool paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtual_addr)
+// bool paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtual_addr)
+// {
+//     /*
+//      * TODO: Find free physical frame and map virtual frame into it
+//      * - Find free physical frame in page_manager_state.page_frame_map[] using any strategies
+//      * - Mark page_manager_state.page_frame_map[]
+//      * - Update page directory with user flags:
+//      *     > present bit    true
+//      *     > write bit      true
+//      *     > user bit       true
+//      *     > pagesize 4 mb  true
+//      */
+
+//     uint32_t frame_index;
+//     for (frame_index = 0; frame_index < PAGE_FRAME_MAX_COUNT; frame_index++)
+//     {
+//         if (!page_manager_state.page_frame_map[frame_index])
+//         {
+//             page_manager_state.page_frame_map[frame_index] = true;
+//             break;
+//         }
+//     }
+//     if (frame_index == PAGE_FRAME_MAX_COUNT)
+//         return false;
+
+//     struct PageDirectoryEntryFlag user_flag = {
+//         .present_bit = true,
+//         .write_bit = true,
+//         .user_bit = true,
+//         .page_level_write_through = 0,
+//         .page_level_cache_disabled = 0,
+//         .accessed = 0,
+//         .dirty = 0,
+//         .use_pagesize_4_mb = true,
+//     };
+
+//     // uint32_t page_index = ((uint32_t)virtual_addr >> 22) & 0x3FF;
+//     // page_dir->table[page_index].flag.present_bit = 1;
+//     // page_dir->table[page_index].flag.write_bit = 1;
+//     // page_dir->table[page_index].flag.user_bit = 1;
+//     // page_dir->table[page_index].flag.use_pagesize_4_mb = 1;
+//     // page_dir->table[page_index].lower_address = frame_index;
+//     // flush_single_tlb(virtual_addr);
+//     // frame_index = frame_index << 22;
+//     update_page_directory_entry(
+//         page_dir,
+//         (void *)frame_index,
+//         virtual_addr,
+//         user_flag);
+//     // page_dir->table->lower_address
+//     return true;
+// }
+
+uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtual_addr)
 {
     /*
      * TODO: Find free physical frame and map virtual frame into it
@@ -83,19 +137,39 @@ bool paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtu
         if (!page_manager_state.page_frame_map[frame_index])
         {
             page_manager_state.page_frame_map[frame_index] = true;
+            page_manager_state.free_page_frame_count--;
             break;
         }
     }
     if (frame_index == PAGE_FRAME_MAX_COUNT)
-        return false;
+        return -1;
 
-    uint32_t page_index = ((uint32_t)virtual_addr >> 22) & 0x3FF;
-    page_dir->table[page_index].flag.present_bit = 1;
-    page_dir->table[page_index].flag.write_bit = 1;
-    page_dir->table[page_index].flag.user_bit = 1;
-    page_dir->table[page_index].flag.use_pagesize_4_mb = 1;
-    page_dir->table[page_index].lower_address = frame_index;
-    return true;
+    struct PageDirectoryEntryFlag user_flag = {
+        .present_bit = true,
+        .write_bit = true,
+        .user_bit = true,
+        .page_level_write_through = 0,
+        .page_level_cache_disabled = 0,
+        .accessed = 0,
+        .dirty = 0,
+        .use_pagesize_4_mb = true,
+    };
+
+    // uint32_t page_index = ((uint32_t)virtual_addr >> 22) & 0x3FF;
+    // page_dir->table[page_index].flag.present_bit = 1;
+    // page_dir->table[page_index].flag.write_bit = 1;
+    // page_dir->table[page_index].flag.user_bit = 1;
+    // page_dir->table[page_index].flag.use_pagesize_4_mb = 1;
+    // page_dir->table[page_index].lower_address = frame_index;
+    // flush_single_tlb(virtual_addr);
+    // frame_index = frame_index << 22;
+    update_page_directory_entry(
+        page_dir,
+        (void *)(frame_index * PAGE_FRAME_SIZE),
+        virtual_addr,
+        user_flag);
+    // page_dir->table->lower_address
+    return frame_index;
 }
 
 bool paging_free_user_page_frame(struct PageDirectory *page_dir, void *virtual_addr)
@@ -143,30 +217,41 @@ struct PageDirectory *paging_create_new_page_directory(void)
      * - Return the page directory address
      */
 
-    int c = -1;
-    for (uint16_t i = 0; i < PAGING_DIRECTORY_TABLE_MAX_COUNT; i++)
+    uint16_t i = 0;
+    bool found = false;
+    while (i < PAGING_DIRECTORY_TABLE_MAX_COUNT && !found)
     {
-        if (page_directory_manager.page_directory_used == false)
+        if (!page_directory_manager.page_directory_used[i])
         {
-            c = i;
-            break;
+            found = true;
+        }
+        else
+        {
+            i++;
         }
     }
 
-    page_directory_manager.page_directory_used[c] = true;
+    if (found)
+    {
+        page_directory_manager.page_directory_used[i] = true;
 
-    struct PageDirectory *new_page = &page_directory_list[c];
+        struct PageDirectory *new_page = &page_directory_list[i];
 
-    struct PageDirectoryEntry new_entry = {
-        .flag.present_bit = 1,
-        .flag.write_bit = 1,
-        .flag.use_pagesize_4_mb = 1,
-        .lower_address = 0,
-    };
+        struct PageDirectoryEntry new_entry = {
+            .flag.present_bit = 1,
+            .flag.write_bit = 1,
+            .flag.use_pagesize_4_mb = 1,
+            .lower_address = 0x000,
+        };
 
-    memcpy(&new_page->table[0x300], &new_entry, sizeof(struct PageDirectoryEntry));
+        memcpy(&new_page->table[0x300], &new_entry, sizeof(struct PageDirectoryEntry));
 
-    return new_page;
+        return new_page;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 bool paging_free_page_directory(struct PageDirectory *page_dir)
@@ -177,8 +262,6 @@ bool paging_free_page_directory(struct PageDirectory *page_dir)
      * - If matches, mark the page directory as unusued and clear all page directory entry
      * - Return true
      */
-
-
     for (uint32_t i = 0; i < PAGING_DIRECTORY_TABLE_MAX_COUNT; i++)
     {
         if (&page_directory_list[i] == page_dir)
