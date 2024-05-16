@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "../header/memory/paging.h"
-#include "header/process/process.h"
-#include "header/stdlib/string.h"
+#include "../header/process/process.h"
+#include "../header/stdlib/string.h"
 
 __attribute__((aligned(0x1000))) struct PageDirectory _paging_kernel_page_directory = {
     .table = {
@@ -178,7 +178,7 @@ bool paging_free_page_directory(struct PageDirectory *page_dir)
      * - Return true
      */
 
-    int c = -1;
+
     for (uint32_t i = 0; i < PAGING_DIRECTORY_TABLE_MAX_COUNT; i++)
     {
         if (&page_directory_list[i] == page_dir)

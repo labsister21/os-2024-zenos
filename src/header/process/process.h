@@ -5,9 +5,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "header/cpu/interrupt.h"
-#include "header/memory/paging.h"
-#include "header/filesystem/fat32.h"
+#include "../interrupt/interrupt.h"
+#include "../memory/paging.h"
+#include "../filesystem/fat32.h"
 
 #define PROCESS_NAME_LENGTH_MAX          32
 #define PROCESS_PAGE_FRAME_COUNT_MAX     8
@@ -117,7 +117,7 @@ void paging_use_page_directory(struct PageDirectory *page_dir_virtual_addr);
  * @param page_directory_virtual_addr CPU register CR3, containing pointer to active page directory
  */
 struct Context {
-    // TODO: Add important field here
+    // TODO: Add important field hereccda
 };
 
 typedef enum PROCESS_STATE {
