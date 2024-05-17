@@ -764,8 +764,7 @@ void process_commands()
                     break;
                 }
             }
-        }
-        else
+        } else
         {
             // delete folder
             //  for (int i = startEntry ; i < 64 ; i++){
@@ -963,6 +962,34 @@ void process_commands()
                 return;
             }
         }
+    } else if (strcmp(buffer[0], "ps") == 0){
+            // split untuk nama proses
+            if (countCommands > 3){
+                char message[256];
+                strcpy(message, "ps");
+                strcat(message, ": invalid commands\n\n");
+                reset_shell_buffer();
+                print_shell_prompt();
+                return;
+            }
+            else {
+                char process_names[16][256] = {0};
+                uint32_t process_ids[16] = {0};
+                syscall(51,(uint32_t)buffer[1], (uint32_t)process_names ,(uint32_t)process_ids);
+                char space = ' ';
+                char newLine = '\n';
+                for (int i = 0 ; i < 16 ; i++){
+                    if (process_names[i][0] != 0){
+                        syscall(6,(uint32_t)process_names[i],0xf,0);
+
+                        syscall(5, (uint32_t)&space,0xf,0);
+                        char id = process_ids[i] + '0';
+                        syscall(5, (uint32_t)&id,0xf,0);
+                        syscall(5, (uint32_t)&newLine,0xf,0);
+                    }
+                }
+                syscall(5, (uint32_t)&newLine,0xf,0);
+            }
     }
     else
     {

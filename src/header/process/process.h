@@ -199,6 +199,7 @@ int32_t process_list_get_inactive_index();
 
 uint32_t ceil_div(uint32_t a, uint32_t b);
 int32_t process_generate_new_pid();
+void getInformation(char* name, char names[16][256], uint32_t process_ids[16]);
 
 extern struct ProcessControlBlock process_list[PROCESS_COUNT_MAX];
 

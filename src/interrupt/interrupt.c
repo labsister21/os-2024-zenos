@@ -140,6 +140,11 @@ void syscall(struct InterruptFrame frame)
     case 50:
         struct FAT32DriverRequest request = *(struct FAT32DriverRequest *)frame.cpu.general.ecx;
         *((int8_t *)frame.cpu.general.edx) = search_file_folder((uint32_t)frame.cpu.general.ebx, request);
+        break;
+    case 51:
+        getInformation((char *)frame.cpu.general.ebx, (char(*)[256])frame.cpu.general.ecx,(uint32_t*)frame.cpu.general.edx);
+        break;
+
     }
 }
 

@@ -115,6 +115,7 @@ bool process_destroy(uint32_t pid)
             process_manager_state.active_process_count--;
             process_manager_state.is_used[i] = false;
             memset(&process_list[i], 0, sizeof(struct ProcessControlBlock));
+            memset(&process_manager_state.process_name[i],0,8);
         }
     }
     return false;
@@ -141,4 +142,17 @@ uint32_t ceil_div(uint32_t a, uint32_t b)
 {
     uint32_t c = !!(a % b);
     return (a / b) + c;
+}
+
+void getInformation(char* name, char names[16][256], uint32_t process_ids[16]){
+    uint32_t curr = 0 ;
+    for (uint32_t i = 0 ; i < 16 ; i++){
+        if (memcmp(name,process_manager_state.process_name[i],8) == 0 || (name[0] == '\0' &&  process_manager_state.process_name[i][0] != '\0' ) ){
+            // process name is the same !
+            memcpy(names[curr],process_manager_state.process_name[i],8);
+            memcpy((void*)process_ids[curr],&i,4);
+            curr++;
+        }
+    }
+
 }
