@@ -144,6 +144,9 @@ void syscall(struct InterruptFrame frame)
     case 51:
         getInformation((char *)frame.cpu.general.ebx, (char(*)[256])frame.cpu.general.ecx,(uint32_t*)frame.cpu.general.edx);
         break;
+    case 52:
+        *((int32_t *)frame.cpu.general.ecx) = process_create_user_process(*(struct FAT32DriverRequest *)frame.cpu.general.ebx);
+        break;
 
     }
 }
