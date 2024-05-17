@@ -16,6 +16,7 @@
         "idt.h": "c",
         "user-shell.h": "c",
         "stdbool.h": "c",
-        "process.h": "c"
+        "process.h": "c",
+        "limits": "c"
     },
 }

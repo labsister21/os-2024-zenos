@@ -97,9 +97,9 @@ int32_t process_create_user_process(struct FAT32DriverRequest request)
 
     new_pcb->context.page_directory_virtual_addr = new_pd;
 
-    // new_pcb->context.cs = 0x18 | 0x3;
-    // new_pcb->context.esp = 0xBFFFFFFC;
-    // new_pcb->context.ss = 0x20 | 0x3;
+    new_pcb->context.cs = 0x18 | 0x3;
+    new_pcb->context.esp = 0xBFFFFFFC;
+    new_pcb->context.ss = 0x20 | 0x3;
 
     new_pcb->context.eflags |= CPU_EFLAGS_BASE_FLAG | CPU_EFLAGS_FLAG_INTERRUPT_ENABLE;
 

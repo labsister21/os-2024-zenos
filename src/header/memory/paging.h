@@ -53,12 +53,13 @@ struct PageDirectoryEntryFlag
 struct PageDirectoryEntry
 {
     struct PageDirectoryEntryFlag flag;
-    uint32_t global_page : 1;
-    uint32_t ignored : 3;
-    uint32_t pat : 1;
-    uint32_t reserved_2 : 1;
-    uint32_t lower_address : 10;
-    uint32_t higher_address : 8;
+    uint16_t global_page : 1;
+    uint16_t ignored : 3;
+    uint16_t pat : 1;
+    uint16_t higher_address : 8;
+    uint16_t reserved_2 : 1;
+    uint16_t lower_address : 10;
+
 } __attribute__((packed));
 
 /**

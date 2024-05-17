@@ -164,6 +164,8 @@ void main_interrupt_handler(struct InterruptFrame frame)
 {
     switch (frame.int_number)
     {
+    case 0xd:
+        break;
     case PIC1_OFFSET + IRQ_KEYBOARD:
         keyboard_isr();
         break;
@@ -174,11 +176,17 @@ void main_interrupt_handler(struct InterruptFrame frame)
         struct Context curr_context = {
             .cpu = frame.cpu,
             .eip = frame.int_stack.eip,
-            .eflags = frame.int_stack.eflags};
+            .cs = frame.int_stack.cs,
+            .eflags = frame.int_stack.eflags,
+            .esp = frame.cpu.stack.esp,
+            .ss = 0x20 | 0x3,
+            .page_directory_virtual_addr = paging_get_current_page_directory_addr(),
+        };
+
         scheduler_save_context_to_current_running_pcb(curr_context);
 
         scheduler_switch_to_next_process();
-        pic_ack(IRQ_TIMER);
+
         break;
     }
 }

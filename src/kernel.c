@@ -193,8 +193,8 @@
 //     kernel_execute_user_program((void *)0x0);
 // }
 
-
-void kernel_setup(void) {
+void kernel_setup(void)
+{
     load_gdt(&_gdt_gdtr);
     pic_remap();
     initialize_idt();
@@ -207,11 +207,11 @@ void kernel_setup(void) {
 
     // Write shell into memory
     struct FAT32DriverRequest request = {
-        .buf                   = (uint8_t*) 0,
-        .name                  = "shell",
-        .ext                   = "\0\0\0",
+        .buf = (uint8_t *)0,
+        .name = "shell",
+        .ext = "\0\0\0",
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-        .buffer_size           = 0x100000,
+        .buffer_size = 0x100000,
     };
 
     // Set TSS.esp0 for interprivilege interrupt

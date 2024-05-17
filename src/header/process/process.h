@@ -153,13 +153,17 @@ struct Context
     // TODO: Add important field here
     struct CPURegister cpu;
     uint32_t eip;
+    uint32_t cs;
     uint32_t eflags;
+    uint32_t esp;
+    uint32_t ss;
     struct PageDirectory *page_directory_virtual_addr;
 };
 
 typedef enum PROCESS_STATE
 {
     // TODO: Add process states
+    NOT_READY,
     READY,   // Process is ready to run and waiting in the ready queue
     RUNNING, // Process is currently being executed by the CPU
     BLOCKED

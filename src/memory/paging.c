@@ -65,59 +65,6 @@ bool paging_allocate_check(uint32_t amount)
     return false;
 }
 
-// bool paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtual_addr)
-// {
-//     /*
-//      * TODO: Find free physical frame and map virtual frame into it
-//      * - Find free physical frame in page_manager_state.page_frame_map[] using any strategies
-//      * - Mark page_manager_state.page_frame_map[]
-//      * - Update page directory with user flags:
-//      *     > present bit    true
-//      *     > write bit      true
-//      *     > user bit       true
-//      *     > pagesize 4 mb  true
-//      */
-
-//     uint32_t frame_index;
-//     for (frame_index = 0; frame_index < PAGE_FRAME_MAX_COUNT; frame_index++)
-//     {
-//         if (!page_manager_state.page_frame_map[frame_index])
-//         {
-//             page_manager_state.page_frame_map[frame_index] = true;
-//             break;
-//         }
-//     }
-//     if (frame_index == PAGE_FRAME_MAX_COUNT)
-//         return false;
-
-//     struct PageDirectoryEntryFlag user_flag = {
-//         .present_bit = true,
-//         .write_bit = true,
-//         .user_bit = true,
-//         .page_level_write_through = 0,
-//         .page_level_cache_disabled = 0,
-//         .accessed = 0,
-//         .dirty = 0,
-//         .use_pagesize_4_mb = true,
-//     };
-
-//     // uint32_t page_index = ((uint32_t)virtual_addr >> 22) & 0x3FF;
-//     // page_dir->table[page_index].flag.present_bit = 1;
-//     // page_dir->table[page_index].flag.write_bit = 1;
-//     // page_dir->table[page_index].flag.user_bit = 1;
-//     // page_dir->table[page_index].flag.use_pagesize_4_mb = 1;
-//     // page_dir->table[page_index].lower_address = frame_index;
-//     // flush_single_tlb(virtual_addr);
-//     // frame_index = frame_index << 22;
-//     update_page_directory_entry(
-//         page_dir,
-//         (void *)frame_index,
-//         virtual_addr,
-//         user_flag);
-//     // page_dir->table->lower_address
-//     return true;
-// }
-
 uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *virtual_addr)
 {
     /*

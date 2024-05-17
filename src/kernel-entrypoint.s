@@ -108,3 +108,23 @@ kernel_execute_user_program:
     push eax ; eip register to jump back
 
     iret
+
+global process_context_switch
+
+; Load struct Context (CPU GP-register) then jump
+; Function Signature: void process_context_switch(struct Context ctx);
+process_context_switch:
+    ; Using iret (return instruction for interrupt) technique for privilege change
+
+    lea ecx, [esp+0x04] ; Save the base address for struct Context ctx
+    mov esp, ecx ;
+    
+    popad ; dah masukin di register
+    
+    ; Restore segment registers
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
+    iret
