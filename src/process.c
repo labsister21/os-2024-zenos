@@ -12,7 +12,7 @@ struct ProcessControlBlock *process_get_current_running_pcb_pointer(void)
     for (uint32_t i = 0; i < PROCESS_COUNT_MAX; i++)
     {
         if (process_manager_state.is_used[i] &&
-            process_list[i].metadata.state == READY)
+            process_list[i].metadata.state == RUNNING)
         {
             return &process_list[i];
         }

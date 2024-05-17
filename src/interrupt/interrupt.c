@@ -5,6 +5,8 @@
 #include "../header/filesystem/fat32.h"
 #include "../header/framebuffer.h"
 #include "../header/stdlib/string.h"
+#include "../header/process/process.h"
+#include "../header/scheduler/scheduler.h"
 
 struct TSSEntry _interrupt_tss_entry = {
     .ss0 = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
@@ -167,6 +169,15 @@ void main_interrupt_handler(struct InterruptFrame frame)
         break;
     case 0x30:
         syscall(frame);
+        break;
+    case PIC1_OFFSET + IRQ_TIMER:
+        struct Context curr_context = {
+            .cpu = frame.cpu,
+            .eip = frame.eip,
+            .eflags = frame.int_stack.eflags};
+        scheduler_save_context_to_current_running_pcb(curr_context);
+        scheduler_switch_to_next_process();
+        pic_ack(IRQ_TIMER);
         break;
     }
 }
