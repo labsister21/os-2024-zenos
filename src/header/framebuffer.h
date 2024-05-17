@@ -63,4 +63,6 @@ void puts(const char *str, uint32_t color);
 
 void put_time(const char *str, uint32_t color);
 
+void putcharcustom(char c, uint8_t row, uint8_t col);
+
 #endif

@@ -122,6 +122,9 @@ void syscall(struct InterruptFrame frame)
     case 16:
         put_time((char *)frame.cpu.general.ebx, frame.cpu.general.ecx);
         break;
+    case 17:
+        putcharcustom((uint8_t)frame.cpu.general.ebx, (uint8_t)frame.cpu.general.ecx, (char)frame.cpu.general.edx);
+        break;
     case 20:
         strsplit((char *)frame.cpu.general.ebx, (char)frame.cpu.general.ecx, (char(*)[256])frame.cpu.general.edx);
         break;

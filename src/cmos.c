@@ -24,6 +24,7 @@ void read_rtc(struct Time *current_time)
         ;
     uint32_t second = get_RTC_register(0x00);
     uint32_t minute = get_RTC_register(0x02);
+
     uint32_t hour = get_RTC_register(0x04);
 
     do
