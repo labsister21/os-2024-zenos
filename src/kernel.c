@@ -214,10 +214,19 @@ void kernel_setup(void)
         .buffer_size = 0x100000,
     };
 
+    // struct FAT32DriverRequest request2 = {
+    //     .buf = (uint8_t *)0,
+    //     .name = "clock",
+    //     .ext = "\0\0\0",
+    //     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+    //     .buffer_size = 0x100000,
+    // };
+
     // Set TSS.esp0 for interprivilege interrupt
     set_tss_kernel_current_stack();
 
     // Create init process and execute it
+
     process_create_user_process(request);
     scheduler_init();
     scheduler_switch_to_next_process();

@@ -7,6 +7,7 @@
 #include "../header/stdlib/string.h"
 #include "../header/process/process.h"
 #include "../header/scheduler/scheduler.h"
+#include "../header/cmos.h"
 
 struct TSSEntry _interrupt_tss_entry = {
     .ss0 = GDT_KERNEL_DATA_SEGMENT_SELECTOR,
@@ -115,6 +116,12 @@ void syscall(struct InterruptFrame frame)
     case 14:
         *((bool *)frame.cpu.general.ebx) = process_destroy(frame.cpu.general.ecx);
         break;
+    case 15:
+        read_rtc((struct Time *)frame.cpu.general.ebx);
+        break;
+    case 16:
+        put_time((char *)frame.cpu.general.ebx, frame.cpu.general.ecx);
+        break;
     case 20:
         strsplit((char *)frame.cpu.general.ebx, (char)frame.cpu.general.ecx, (char(*)[256])frame.cpu.general.edx);
         break;
@@ -136,25 +143,21 @@ void syscall(struct InterruptFrame frame)
         struct FAT32DirectoryTable *dirTable = (struct FAT32DirectoryTable *)frame.cpu.general.ecx;
         write_clusters(dirTable, frame.cpu.general.ebx, 1);
         break;
-
     case 50:
         struct FAT32DriverRequest request = *(struct FAT32DriverRequest *)frame.cpu.general.ecx;
         *((int8_t *)frame.cpu.general.edx) = search_file_folder((uint32_t)frame.cpu.general.ebx, request);
         break;
     case 51:
-        getInformation((char *)frame.cpu.general.ebx, (char(*)[256])frame.cpu.general.ecx,(uint32_t*)frame.cpu.general.edx);
+        getInformation((char *)frame.cpu.general.ebx, (char(*)[256])frame.cpu.general.ecx, (uint32_t *)frame.cpu.general.edx);
         break;
     case 52:
         *((int32_t *)frame.cpu.general.ecx) = process_create_user_process(*(struct FAT32DriverRequest *)frame.cpu.general.ebx);
         break;
-    
-
-
     }
 }
 
 #define PIT_MAX_FREQUENCY 1193182
-#define PIT_TIMER_FREQUENCY 1000
+#define PIT_TIMER_FREQUENCY 1
 #define PIT_TIMER_COUNTER (PIT_MAX_FREQUENCY / PIT_TIMER_FREQUENCY)
 
 #define PIT_COMMAND_REGISTER_PIO 0x43

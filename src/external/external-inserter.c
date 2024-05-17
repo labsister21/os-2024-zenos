@@ -87,16 +87,16 @@ int main(int argc, char *argv[])
     default:
         puts("Error: Unknown error");
     }
-    struct FAT32DriverRequest req2;
-    char* name2 = "love2";
+    // struct FAT32DriverRequest req2;
+    // char *name2 = "love2";
 
-    memcpy(req2.name,name2,6);
-    req2.ext[0]  = '\0';
-    req2.ext[1]  = '\0';
-    req2.ext[2]  = '\0';
-    req2.parent_cluster_number = 2;
-    req2.buffer_size = 0;
-    write(req2);
+    // memcpy(req2.name, name2, 6);
+    // req2.ext[0] = '\0';
+    // req2.ext[1] = '\0';
+    // req2.ext[2] = '\0';
+    // req2.parent_cluster_number = 2;
+    // req2.buffer_size = 0;
+    // write(req2);
 
     // struct FAT32DriverRequest req3;
     // char* name3 = "love3";
@@ -109,17 +109,17 @@ int main(int argc, char *argv[])
     // req3.buffer_size = 0;
     // write(req3);
 
-    char file1Content[2*CLUSTER_SIZE];
-    char * content = "ABCDEFG\nHIJKLMN\nOPQRSTU\nVWXYZ";
-    memcpy(file1Content,content,2*CLUSTER_SIZE);
-    struct FAT32DriverRequest requestWriteFile = {
-        .buf = file1Content,
-        .name = "file1",
-        .ext = "txt",
-        .parent_cluster_number = ROOT_CLUSTER_NUMBER,
-        .buffer_size = sizeof(file1Content),
-    };
-    write(requestWriteFile);
+    // char file1Content[2*CLUSTER_SIZE];
+    // char * content = "ABCDEFG\nHIJKLMN\nOPQRSTU\nVWXYZ";
+    // memcpy(file1Content,content,2*CLUSTER_SIZE);
+    // struct FAT32DriverRequest requestWriteFile = {
+    //     .buf = file1Content,
+    //     .name = "file1",
+    //     .ext = "txt",
+    //     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+    //     .buffer_size = sizeof(file1Content),
+    // };
+    // write(requestWriteFile);
 
     // char file2content[CLUSTER_SIZE];
     // char * content2 = "Ini file2\nAda di folder love3\nLesgooo\n";

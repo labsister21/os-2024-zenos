@@ -17,6 +17,8 @@
         "user-shell.h": "c",
         "stdbool.h": "c",
         "process.h": "c",
-        "limits": "c"
+        "limits": "c",
+        "cmos.h": "c",
+        "clock.h": "c"
     },
 }
