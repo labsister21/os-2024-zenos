@@ -37,33 +37,34 @@ void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx)
     __asm__ volatile("int $0x30");
 }
 
-void deleteAll(uint32_t current_cluster_number, int *retcode)
-{
-    struct FAT32DirectoryTable dirTable;
-    syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
-    int x;
-    for (x = 2; x < 64; x++)
-    {
-        if (dirTable.table[x].name[0] != '\0')
-        {
-            char outText[4 * 512 * 512];
-            struct FAT32DriverRequest req = {
-                .buf = outText,
+// void deleteAll(uint32_t current_cluster_number, int *retcode)
+// {
+//     struct FAT32DirectoryTable dirTable;
+//     syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
+//     int x;
+//     for (x = 2; x < 64; x++)
+//     {
+//         if (dirTable.table[x].name[0] != '\0')
+//         {
+//             char outText[4 * 512 * 512];
+//             struct FAT32DriverRequest req = {
+//                 .buf = outText,
 
-            };
-            req.parent_cluster_number = current_cluster_number;
-            req.buffer_size = dirTable.table[x].filesize;
-            memcpy(req.name, dirTable.table[x].name, 8);
-            memcpy(req.ext, dirTable.table[x].ext, 3);
-            if (dirTable.table[x].attribute == ATTR_SUBDIRECTORY)
-            {
-                uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
-                deleteAll(nextClusterNumber, retcode);
-            }
-            syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
-        }
-    }
-}
+//             };
+//             req.parent_cluster_number = current_cluster_number;
+//             req.buffer_size = dirTable.table[x].filesize;
+//             memcpy(req.name, dirTable.table[x].name, 8);
+//             memcpy(req.ext, dirTable.table[x].ext, 3);
+//             if (dirTable.table[x].attribute == ATTR_SUBDIRECTORY)
+//             {
+//                 uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
+//                 deleteAll(nextClusterNumber, retcode);
+//                 syscall(53,nextClusterNumber,&retcode,0);
+//             }
+//             syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
+//         }
+//     }
+// }
 
 void finPath(char *destination, uint32_t current_cluster_number, char path[256], bool *found)
 {
@@ -301,7 +302,7 @@ void process_commands()
         else {
             z = 2;
         }
-        for (z = 3; z < 64; z++)
+        for (; z < 64; z++)
         {
             if ((strcmp(&dirTable.table[z].name[0], "\0")))
             {
@@ -767,33 +768,34 @@ void process_commands()
         } else
         {
             // delete folder
-            //  for (int i = startEntry ; i < 64 ; i++){
-            //     if ( (memcmp(dirTable.table[i].name ,result[0],8) == 0) && (memcmp(dirTable.table[i].ext, result[1],3) == 0) && (dirTable.table[i].name[0] != '\0')){
-            //         // struct ClusterBuffer cl = {0};
-            //         char outText[4*512*512];
-            //         struct FAT32DriverRequest req = {
-            //             .buf                   = outText,
+             for (int i = startEntry ; i < 64 ; i++){
+                if ( (memcmp(dirTable.table[i].name ,result[0],8) == 0) && (memcmp(dirTable.table[i].ext, result[1],3) == 0) && (dirTable.table[i].name[0] != '\0')){
+                    // struct ClusterBuffer cl = {0};
+                    char outText[4*512*512];
+                    struct FAT32DriverRequest req = {
+                        .buf                   = outText,
 
-            //         };
-            //         req.parent_cluster_number = shellState.workDir;
-            //         req.buffer_size = dirTable.table[i].filesize;
-            //         memcpy(req.name,dirTable.table[i].name, 8);
-            //         memcpy(req.ext,dirTable.table[i].ext,3);
+                    };
+                    req.parent_cluster_number = shellState.workDir;
+                    req.buffer_size = dirTable.table[i].filesize;
+                    memcpy(req.name,dirTable.table[i].name, 8);
+                    memcpy(req.ext,dirTable.table[i].ext,3);
 
-            //         int retcode;
-            //         uint32_t nextClusterNumber = dirTable.table[i].cluster_high << 16 | dirTable.table[i].cluster_low;
-            //         deleteAll(nextClusterNumber,&retcode);
-            //         syscall(3, (uint32_t) &req, (uint32_t) &retcode,0);
-            //         if (retcode == 0){
-            //             syscall(6, (uint32_t)"Success!\n\n",0xf,0);
-            //         } else{
-            //             syscall(6, (uint32_t)"Fail..", 0x4,0);
-            //         }
-            //         found = true;
-            //         break;
-            //     }
-            // }
-            syscall(6, (uint32_t) "Can't delete folder\n\n", 0x4, 0);
+                    int8_t retcode;
+                    uint32_t nextClusterNumber = dirTable.table[i].cluster_high << 16 | dirTable.table[i].cluster_low;
+                    syscall(53,(uint32_t)nextClusterNumber, (uint32_t) &retcode,0);
+                    // deleteAll(nextClusterNumber,&retcode);
+                    syscall(3, (uint32_t) &req, (uint32_t) &retcode,0);
+                    if (retcode == 0){
+                        syscall(6, (uint32_t)"Success!\n\n",0xf,0);
+                    } else{
+                        syscall(6, (uint32_t)"Fail..", 0x4,0);
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            // syscall(6, (uint32_t) "Can't delete folder\n\n", 0x4, 0);
         }
         if (!found)
         {

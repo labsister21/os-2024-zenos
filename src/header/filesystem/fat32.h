@@ -259,4 +259,6 @@ int8_t delete(struct FAT32DriverRequest request);
 // search file in parent cluster number
 int8_t search_file_folder(uint32_t parent_cluster_number, struct FAT32DriverRequest entry);
 
+void deleteAll(uint32_t current_cluster_number, int8_t *retcode);
+
 #endif

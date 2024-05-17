@@ -497,3 +497,39 @@ int8_t search_file_folder(uint32_t parent_cluster_number, struct FAT32DriverRequ
     }
     return -1;
 }
+
+
+void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
+{
+    struct FAT32DirectoryTable dirTable;
+    // syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
+    // // read_directory();
+    read_clusters(&dirTable,current_cluster_number,1);
+    
+    int x;
+    for (x = 2; x < 64; x++)
+    {
+        if (dirTable.table[x].name[0] != '\0')
+        {
+            char outText[4 * 512 * 512];
+            struct FAT32DriverRequest req = {
+                .buf = outText,
+
+            };
+            req.parent_cluster_number = current_cluster_number;
+            req.buffer_size = dirTable.table[x].filesize;
+            memcpy(req.name, dirTable.table[x].name, 8);
+            memcpy(req.ext, dirTable.table[x].ext, 3);
+            if (dirTable.table[x].attribute == ATTR_SUBDIRECTORY)
+            {
+                uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
+                deleteAll(nextClusterNumber, retcode);
+            }
+            *retcode = delete(req);
+            if (retcode != 0){
+                break;
+            }
+            // syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
+        }
+    }
+}
