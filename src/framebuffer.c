@@ -118,3 +118,16 @@ void puts(const char *str, uint32_t color)
         c = str[i];
     }
 }
+
+void put_time(const char *str, uint32_t color)
+{
+    uint8_t i = 0;
+    char c = str[i];
+
+    while (c != '\0')
+    {
+        framebuffer_write(24, 71 + i, c, color, 0);
+        i++;
+        c = str[i];
+    }
+}
