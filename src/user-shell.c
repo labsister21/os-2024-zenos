@@ -1080,7 +1080,7 @@ void process_commands()
                     return;
                 }
                 else {
-                    syscall(6, (uint32_t) "Success! \n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "Success! \n\n", 0xf, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
@@ -1091,7 +1091,7 @@ void process_commands()
     }
     else if (strcmp(buffer[0], "kill") == 0){
         if (countCommands != 2){
-            syscall(6, (uint32_t) "Success! \n\n", 0x4, 0);
+            syscall(6, (uint32_t) "Success! \n\n", 0xf, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -1103,7 +1103,7 @@ void process_commands()
             pid = pid * 10 + (buffer[1][i] - '0');
         }
         if (pid == 0){
-            syscall(6, (uint32_t) "Failed! \n\n", 0x4, 0);
+            syscall(6, (uint32_t) "Failed!, unable to kill shell \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
