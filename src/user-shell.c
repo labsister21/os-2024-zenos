@@ -295,7 +295,13 @@ void process_commands()
         get_dir(shellState.workDir, &dirTable);
 
         uint8_t z;
-        for (z = 2; z < 64; z++)
+        if (shellState.workDir == 2){
+            z = 3;
+        }
+        else {
+            z = 2;
+        }
+        for (z = 3; z < 64; z++)
         {
             if ((strcmp(&dirTable.table[z].name[0], "\0")))
             {
@@ -394,8 +400,18 @@ void process_commands()
         struct FAT32DriverRequest requestReadFile = {
             .buf = outText,
         };
+
         memcpy(requestReadFile.name, splitFilenameExt[0], 8);
         memcpy(requestReadFile.ext, splitFilenameExt[1], 3);
+        if (shellState.workDir == 2 && memcmp(requestReadFile.name,"shell\0\0",8) == 0 && memcmp(requestReadFile.ext,"\0\0\0",3) == 0){
+            syscall(6, (uint32_t) "cat: ", 0x4, 0);
+            syscall(6, (uint32_t)buffer[1], 0x4, 0);
+            syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+
+        }
         requestReadFile.parent_cluster_number = shellState.workDir;
         requestReadFile.buffer_size = 4 * 512 * 512;
         syscall(0, (uint32_t)&requestReadFile, (uint32_t)&retcode, 0);
