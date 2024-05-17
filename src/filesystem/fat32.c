@@ -511,9 +511,9 @@ void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
     {
         if (dirTable.table[x].name[0] != '\0')
         {
-            char outText[4 * 512 * 512];
+            // char outText[4 * 512 * 512] = {0};
             struct FAT32DriverRequest req = {
-                .buf = outText,
+
 
             };
             req.parent_cluster_number = current_cluster_number;
@@ -526,7 +526,7 @@ void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
                 deleteAll(nextClusterNumber, retcode);
             }
             *retcode = delete(req);
-            if (retcode != 0){
+            if (*retcode != 0){
                 break;
             }
             // syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);

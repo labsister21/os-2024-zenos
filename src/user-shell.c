@@ -37,35 +37,6 @@ void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx)
     __asm__ volatile("int $0x30");
 }
 
-// void deleteAll(uint32_t current_cluster_number, int *retcode)
-// {
-//     struct FAT32DirectoryTable dirTable;
-//     syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
-//     int x;
-//     for (x = 2; x < 64; x++)
-//     {
-//         if (dirTable.table[x].name[0] != '\0')
-//         {
-//             char outText[4 * 512 * 512];
-//             struct FAT32DriverRequest req = {
-//                 .buf = outText,
-
-//             };
-//             req.parent_cluster_number = current_cluster_number;
-//             req.buffer_size = dirTable.table[x].filesize;
-//             memcpy(req.name, dirTable.table[x].name, 8);
-//             memcpy(req.ext, dirTable.table[x].ext, 3);
-//             if (dirTable.table[x].attribute == ATTR_SUBDIRECTORY)
-//             {
-//                 uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
-//                 deleteAll(nextClusterNumber, retcode);
-//                 syscall(53,nextClusterNumber,&retcode,0);
-//             }
-//             syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
-//         }
-//     }
-// }
-
 void finPath(char *destination, uint32_t current_cluster_number, char path[256], bool *found)
 {
     struct FAT32DirectoryTable dirTable;
@@ -75,13 +46,13 @@ void finPath(char *destination, uint32_t current_cluster_number, char path[256],
     {
         if (strcmp(dirTable.table[x].name, destination) == 0)
         {
-            char temp[256];
+            char temp[256] = {0};
             strncpy(temp, path, 256);
             strcat(temp, "/");
 
             strcat(temp, dirTable.table[x].name);
             syscall(6, (uint32_t)temp, 0xf, 0);
-            if (dirTable.table[x].filesize > 0)
+            if (dirTable.table[x].filesize > 0 && dirTable.table[x].ext[0] != '\0')
             {
                 syscall(6, (uint32_t) ".", 0xf, 0);
                 for (int i = 0; i < 3; i++)
@@ -94,7 +65,7 @@ void finPath(char *destination, uint32_t current_cluster_number, char path[256],
         }
         if (dirTable.table[x].attribute == ATTR_SUBDIRECTORY)
         {
-            char temp[256];
+            char temp[256] = {0};
             strncpy(temp, path, 256);
             strcat(temp, "/");
             strcat(temp, dirTable.table[x].name);
@@ -276,7 +247,7 @@ void process_commands()
                     }
                 }
             }
-            char message[256];
+            char message[256] = {0};
             strcpy(message, "cd: ");
             strcat(message, buffer[1]);
             strcat(message, ": No such directory\n\n");
@@ -316,10 +287,12 @@ void process_commands()
                 }
                 if (dirTable.table[z].attribute == 0)
                 {
-                    char dot[1];
+                    char dot[1] = {0};
                     char *dotraw = ".";
                     memcpy(dot, dotraw, 1);
-                    syscall(5, (uint32_t)dot, 0xF, 0);
+                    if (dirTable.table[z].ext[0] != '\0'){
+                        syscall(5, (uint32_t)dot, 0xF, 0);
+                    }
                     int y;
                     for (y = 0; y < 3; y++)
                     {
@@ -397,7 +370,7 @@ void process_commands()
             syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
         }
         int8_t retcode;
-        char outText[4 * 512 * 512];
+        char outText[4 * 512 * 512] = {0};
         struct FAT32DriverRequest requestReadFile = {
             .buf = outText,
         };
@@ -552,8 +525,8 @@ void process_commands()
             // Ambil directory entry dari file/folder yang ingin dipindah
             struct FAT32DirectoryEntry tempDirEntry;
             uint32_t currParentCluster = ROOT_CLUSTER_NUMBER;
-            char currName[8];
-            char currExt[3];
+            char currName[8] = {0};
+            char currExt[3] = {0};
             struct FAT32DirectoryTable tempDirTable;
             for (int j = 0; j < countPathParam1; j++)
             {
@@ -708,7 +681,7 @@ void process_commands()
         finPath(buffer[1], 2, temp, &found);
         if (!found)
         {
-            char message[256];
+            char message[256] = {0};
             strcpy(message, "find: ");
             strcat(message, buffer[1]);
             strcat(message, ": No such file/directory\n\n");
@@ -741,7 +714,7 @@ void process_commands()
                 if ((memcmp(dirTable.table[i].name, result[0], 8) == 0) && (memcmp(dirTable.table[i].ext, result[1], 3) == 0) && (dirTable.table[i].name[0] != '\0'))
                 {
                     // struct ClusterBuffer cl = {0};
-                    char outText[4 * 512 * 512];
+                    char outText[4 * 512 * 512] = {0};
                     struct FAT32DriverRequest req = {
                         .buf = outText,
 
@@ -751,7 +724,7 @@ void process_commands()
                     memcpy(req.name, dirTable.table[i].name, 8);
                     memcpy(req.ext, dirTable.table[i].ext, 3);
 
-                    int retcode;
+                    int retcode = 0;
                     syscall(3, (uint32_t)&req, (uint32_t)&retcode, 0);
                     if (retcode == 0)
                     {
@@ -759,7 +732,7 @@ void process_commands()
                     }
                     else
                     {
-                        syscall(6, (uint32_t) "Fail..", 0x4, 0);
+                        syscall(6, (uint32_t) "Fail..\n\n", 0x4, 0);
                     }
                     found = true;
                     break;
@@ -771,7 +744,7 @@ void process_commands()
              for (int i = startEntry ; i < 64 ; i++){
                 if ( (memcmp(dirTable.table[i].name ,result[0],8) == 0) && (memcmp(dirTable.table[i].ext, result[1],3) == 0) && (dirTable.table[i].name[0] != '\0')){
                     // struct ClusterBuffer cl = {0};
-                    char outText[4*512*512];
+                    char outText[4*512*512] = {0};
                     struct FAT32DriverRequest req = {
                         .buf                   = outText,
 
@@ -789,7 +762,7 @@ void process_commands()
                     if (retcode == 0){
                         syscall(6, (uint32_t)"Success!\n\n",0xf,0);
                     } else{
-                        syscall(6, (uint32_t)"Fail..", 0x4,0);
+                        syscall(6, (uint32_t)"Fail..\n\n", 0x4,0);
                     }
                     found = true;
                     break;
@@ -814,13 +787,17 @@ void process_commands()
         }
 
         // splitting first path and second path
-        char path1[16][256];
-        char path2[16][256];
+        char path1[16][256] = {0};
+        char path2[16][256] = {0};
         strsplit(buffer[1], '/', path1);
         strsplit(buffer[2], '/', path2);
+        if (strcmp(path1[0],"/") == 0){
 
+        }
+
+        // printting buffer
         // search for file, note that extension is only at the end
-        char outText[4 * 512 * 512];
+        char outText[4 * 512 * 512] = {0};
         struct FAT32DriverRequest req = {
             .buf = outText,
             .buffer_size = 4 * 512 * 512,
@@ -890,7 +867,7 @@ void process_commands()
         else
         {
             // find location for next copy process
-            char outText[4 * 512 * 512];
+            char outText[4 * 512 * 512] = {0};
             struct FAT32DriverRequest reqTarget = {
                 .buf = outText,
                 .buffer_size = CLUSTER_SIZE,
@@ -967,7 +944,7 @@ void process_commands()
     } else if (strcmp(buffer[0], "ps") == 0){
             // split untuk nama proses
             if (countCommands > 3){
-                char message[256];
+                char message[256] = {0};
                 strcpy(message, "ps");
                 strcat(message, ": invalid commands\n\n");
                 reset_shell_buffer();
@@ -1008,11 +985,11 @@ void process_commands()
             // something went wrong
         } else{
               // splitting first path and second path
-        char path1[16][256];
+        char path1[16][256] = {0};
         strsplit(buffer[1], '/', path1);
 
         // search for file, note that extension is only at the end
-        char outText[4 * 512 * 512];
+        char outText[4 * 512 * 512] = {0};
         struct FAT32DriverRequest req = {
             .buf = outText,
             .buffer_size = 4 * 512 * 512,
@@ -1320,7 +1297,7 @@ void use_keyboard()
             syscall(9, (uint32_t)&col, 0, 0);
             if (currChar != '\b') // not backspace = writing in the middle of a text
             {
-                char temp[256];
+                char temp[256] = {0};
 
                 // insert the curr char into the command buffer
                 shellState.commandBuffer[shellState.bufferIndex] = currChar;
@@ -1376,7 +1353,7 @@ void use_keyboard()
                     int command_index = shellState.bufferIndex;
 
                     // put all the char in arrow buffer to temp to print out and also overwrite the command buffer part
-                    char temp[256];
+                    char temp[256] = {0};
                     for (int i = 0; i < arrowBufferLength; i++)
                     {
                         arrow_index++;
@@ -1425,22 +1402,6 @@ void use_keyboard()
         }
     }
 }
-
-// void handle_command(){
-//     char current_commands[20][256] = {0};
-//     char command[20];
-//     char arg[20];
-
-//     strsplit(shellState.commandBuffer,' ', current_commands);
-//     memcpy(command,current_commands[0]);
-
-//     if (memcmp(command,"cd") == 0){
-//         memcpy(arg,current_commands[1]);
-//         // set cursor location
-
-//     }
-
-// }
 
 int main(void)
 {
