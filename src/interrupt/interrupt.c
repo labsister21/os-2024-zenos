@@ -113,7 +113,7 @@ void syscall(struct InterruptFrame frame)
         process_create_user_process(*(struct FAT32DriverRequest *)frame.cpu.general.ebx);
         break;
     case 14:
-        process_destroy(frame.cpu.general.ebx);
+        *((bool *)frame.cpu.general.ebx) = process_destroy(frame.cpu.general.ecx);
         break;
     case 20:
         strsplit((char *)frame.cpu.general.ebx, (char)frame.cpu.general.ecx, (char(*)[256])frame.cpu.general.edx);
@@ -147,6 +147,8 @@ void syscall(struct InterruptFrame frame)
     case 52:
         *((int32_t *)frame.cpu.general.ecx) = process_create_user_process(*(struct FAT32DriverRequest *)frame.cpu.general.ebx);
         break;
+    
+
 
     }
 }

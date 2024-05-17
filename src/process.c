@@ -116,6 +116,7 @@ bool process_destroy(uint32_t pid)
             process_manager_state.is_used[i] = false;
             memset(&process_list[i], 0, sizeof(struct ProcessControlBlock));
             memset(&process_manager_state.process_name[i],0,8);
+            return true;
         }
     }
     return false;
