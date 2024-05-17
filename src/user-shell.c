@@ -983,11 +983,22 @@ void process_commands()
                 for (int i = 0 ; i < 16 ; i++){
                     if (process_names[i][0] != 0){
                         syscall(6,(uint32_t)process_names[i],0xf,0);
+                        if (process_ids[i] <= 9){
+                            syscall(5, (uint32_t)&space,0xf,0);
+                            char id = process_ids[i] + '0';
+                            syscall(5, (uint32_t)&id,0xf,0);
+                            syscall(5, (uint32_t)&newLine,0xf,0);
+                        }
+                        else {
+                            char first = (process_ids[i] / 10 + '0');
+                            char second = (process_ids[i] % 10 + '0');
+                            syscall(5, (uint32_t)&space,0xf,0);
+                            syscall(5, (uint32_t)&first,0xf,0);
+                            syscall(5, (uint32_t)&second,0xf,0);
+                            syscall(5, (uint32_t)&newLine,0xf,0);
 
-                        syscall(5, (uint32_t)&space,0xf,0);
-                        char id = process_ids[i] + '0';
-                        syscall(5, (uint32_t)&id,0xf,0);
-                        syscall(5, (uint32_t)&newLine,0xf,0);
+                        }
+
                     }
                 }
                 syscall(5, (uint32_t)&newLine,0xf,0);

@@ -59,6 +59,6 @@ void read_rtc(struct Time *current_time)
 
     // Calculate the full (4-digit) year
     current_time->hour = hour;
-
+    current_time->minute = minute;
     current_time->second = second;
 }
