@@ -49,6 +49,7 @@ struct ProcessManagerState
 {
     int active_process_count;
     int is_used[16];
+    char process_name[16][8];
 };
 
 /**

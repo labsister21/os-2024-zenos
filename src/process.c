@@ -5,7 +5,8 @@
 
 static struct ProcessManagerState process_manager_state = {
     .active_process_count = 0,
-    .is_used = {false}};
+    .is_used = {false},
+    .process_name = {{0}}};
 
 struct ProcessControlBlock *process_get_current_running_pcb_pointer(void)
 {
@@ -53,7 +54,7 @@ int32_t process_create_user_process(struct FAT32DriverRequest request)
     process_manager_state.is_used[p_index] = true;
     process_manager_state.active_process_count++;
 
-    new_pcb->metadata.process_id = process_generate_new_pid();
+    new_pcb->metadata.process_id = p_index;
 
     struct PageDirectory *current_pd = paging_get_current_page_directory_addr();
     struct PageDirectory *new_pd = paging_create_new_page_directory();
@@ -74,18 +75,12 @@ int32_t process_create_user_process(struct FAT32DriverRequest request)
         goto exit_cleanup;
     }
 
+    memcpy(&process_manager_state.process_name[p_index], &request.name, 8);
+
     new_pcb->metadata.state = READY;
 
     paging_use_page_directory(current_pd);
 
-    // Menyiapkan state & context awal untuk program
-    // Segment register seharusnya menggunakan nilai Segment Selector yang menunjuk ke GDT user data segment descriptor dan memiliki Privilege Level 3
-
-    // segment register ds, es, fs, gs
-    // GDT use data segment descriptor priv 3
-    // 0000000000100 0 11 = 0x20 | 0x3 = 35
-
-    // initialize context bukannya sudah ada di kernel_execute_user_program ?
     new_pcb->context.cpu.segment.ds = 0x20 | 0x3;
     new_pcb->context.cpu.segment.es = 0x20 | 0x3;
     new_pcb->context.cpu.segment.fs = 0x20 | 0x3;
@@ -119,6 +114,7 @@ bool process_destroy(uint32_t pid)
             // destroy process
             process_manager_state.active_process_count--;
             process_manager_state.is_used[i] = false;
+            memset(&process_list[i], 0, sizeof(struct ProcessControlBlock));
         }
     }
     return false;

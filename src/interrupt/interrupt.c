@@ -106,6 +106,15 @@ void syscall(struct InterruptFrame frame)
     case 11:
         framebuffer_clear();
         break;
+    case 12:
+        process_destroy(frame.cpu.general.ebx);
+        break;
+    case 13:
+        process_create_user_process(*(struct FAT32DriverRequest *)frame.cpu.general.ebx);
+        break;
+    case 14:
+        process_destroy(frame.cpu.general.ebx);
+        break;
     case 20:
         strsplit((char *)frame.cpu.general.ebx, (char)frame.cpu.general.ecx, (char(*)[256])frame.cpu.general.edx);
         break;
