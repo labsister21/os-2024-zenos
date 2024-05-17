@@ -121,17 +121,17 @@ int main(int argc, char *argv[])
     };
     write(requestWriteFile);
 
-    // char file2content[CLUSTER_SIZE];
-    // char * content2 = "Ini file2\nAda di folder love3\nLesgooo\n";
-    // memcpy(file2content,content2,CLUSTER_SIZE);
-    // struct FAT32DriverRequest requestWriteFile2 = {
-    //     .buf = file2content,
-    //     .name = "file2",
-    //     .ext = "txt",
-    //     .parent_cluster_number = 16,
-    //     .buffer_size = sizeof(file2content),
-    // };
-    // write(requestWriteFile2);
+    char file2content[CLUSTER_SIZE];
+    char * content2 = "Ini file2\nAda di folder nested\nLesgooo\n";
+    memcpy(file2content,content2,CLUSTER_SIZE);
+    struct FAT32DriverRequest requestWriteFile2 = {
+        .buf = file2content,
+        .name = "file2",
+        .ext = "txt",
+        .parent_cluster_number = 2,
+        .buffer_size = sizeof(file2content),
+    };
+    write(requestWriteFile2);
 
     // Write image in memory into original, overwrite them
     fptr = fopen(argv[3], "w");
