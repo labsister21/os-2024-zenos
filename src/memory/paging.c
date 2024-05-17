@@ -22,10 +22,9 @@ __attribute__((aligned(0x1000))) struct PageDirectory _paging_kernel_page_direct
     }};
 
 static struct PageManagerState page_manager_state = {
-    .page_frame_map = {
-        [0] = true,
-        [1 ... PAGE_FRAME_MAX_COUNT - 1] = false},
-    // TODO: Initialize page manager state properly
+    .page_frame_map = {[0 ... PAGE_FRAME_MAX_COUNT - 1] = false},
+    .free_page_frame_count = PAGE_FRAME_MAX_COUNT,
+    // TODO: Fill in if needed ...
 };
 
 void update_page_directory_entry(
@@ -36,7 +35,7 @@ void update_page_directory_entry(
 {
     uint32_t page_index = ((uint32_t)virtual_addr >> 22) & 0x3FF;
     page_dir->table[page_index].flag = flag;
-    page_dir->table[page_index].lower_address = ((uint32_t)physical_addr) & 0x3FF;
+    page_dir->table[page_index].lower_address = ((uint32_t)physical_addr >> 22) & 0x3FF;
     flush_single_tlb(virtual_addr);
 }
 
@@ -138,6 +137,7 @@ uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *v
         if (!page_manager_state.page_frame_map[frame_index])
         {
             page_manager_state.page_frame_map[frame_index] = true;
+            page_manager_state.free_page_frame_count--;
             break;
         }
     }
@@ -221,7 +221,7 @@ struct PageDirectory *paging_create_new_page_directory(void)
     bool found = false;
     while (i < PAGING_DIRECTORY_TABLE_MAX_COUNT && !found)
     {
-        if (page_directory_manager.page_directory_used == false)
+        if (!page_directory_manager.page_directory_used[i])
         {
             found = true;
         }
@@ -231,20 +231,27 @@ struct PageDirectory *paging_create_new_page_directory(void)
         }
     }
 
-    page_directory_manager.page_directory_used[i] = true;
+    if (found)
+    {
+        page_directory_manager.page_directory_used[i] = true;
 
-    struct PageDirectory *new_page = &page_directory_list[i];
+        struct PageDirectory *new_page = &page_directory_list[i];
 
-    struct PageDirectoryEntry new_entry = {
-        .flag.present_bit = 1,
-        .flag.write_bit = 1,
-        .flag.use_pagesize_4_mb = 1,
-        .lower_address = 0x000,
-    };
+        struct PageDirectoryEntry new_entry = {
+            .flag.present_bit = 1,
+            .flag.write_bit = 1,
+            .flag.use_pagesize_4_mb = 1,
+            .lower_address = 0x000,
+        };
 
-    memcpy(&new_page->table[0x300], &new_entry, sizeof(struct PageDirectoryEntry));
+        memcpy(&new_page->table[0x300], &new_entry, sizeof(struct PageDirectoryEntry));
 
-    return new_page;
+        return new_page;
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 bool paging_free_page_directory(struct PageDirectory *page_dir)
