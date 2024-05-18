@@ -83,7 +83,8 @@ user-shell:
 	@size --target=binary $(OUTPUT_FOLDER)/shell
 	@rm -f *.o
 
-clock:
+
+user-clock:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/crt0.s -o crt0.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/clock.c -o clock.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/stdlib/string.c -o string.o
@@ -101,6 +102,7 @@ insert-shell: inserter user-shell
 	@echo Inserting shell into root directory...
 	@cd $(OUTPUT_FOLDER); ./inserter shell 2 $(DISK_NAME).bin
 
-insert-clock: inserter clock
+
+insert-clock: inserter user-clock
 	@echo Inserting clock into root directory...
 	@cd $(OUTPUT_FOLDER); ./inserter clock 2 $(DISK_NAME).bin

@@ -1,4 +1,3 @@
-
 #include "./header/user-shell.h"
 #include <stdint.h>
 #include "header/filesystem/fat32.h"
@@ -38,33 +37,33 @@ void syscall(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx)
     __asm__ volatile("int $0x30");
 }
 
-void deleteAll(uint32_t current_cluster_number, int *retcode)
-{
-    struct FAT32DirectoryTable dirTable;
-    syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
-    int x;
-    for (x = 2; x < 64; x++)
-    {
-        if (dirTable.table[x].name[0] != '\0')
-        {
-            char outText[4 * 512 * 512];
-            struct FAT32DriverRequest req = {
-                .buf = outText,
+// void deleteAll(uint32_t current_cluster_number, int *retcode)
+// {
+//     struct FAT32DirectoryTable dirTable;
+//     syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
+//     int x;
+//     for (x = 2; x < 64; x++)
+//     {
+//         if (dirTable.table[x].name[0] != '\0')
+//         {
+//             char outText[4 * 512 * 512];
+//             struct FAT32DriverRequest req = {
+//                 .buf = outText,
 
-            };
-            req.parent_cluster_number = current_cluster_number;
-            req.buffer_size = dirTable.table[x].filesize;
-            memcpy(req.name, dirTable.table[x].name, 8);
-            memcpy(req.ext, dirTable.table[x].ext, 3);
-            if (dirTable.table[x].attribute == ATTR_SUBDIRECTORY)
-            {
-                uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
-                deleteAll(nextClusterNumber, retcode);
-            }
-            syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
-        }
-    }
-}
+//             };
+//             req.parent_cluster_number = current_cluster_number;
+//             req.buffer_size = dirTable.table[x].filesize;
+//             memcpy(req.name, dirTable.table[x].name, 8);
+//             memcpy(req.ext, dirTable.table[x].ext, 3);
+//             if (dirTable.table[x].attribute == ATTR_SUBDIRECTORY)
+//             {
+//                 uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
+//                 deleteAll(nextClusterNumber, retcode);
+//             }
+//             syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
+//         }
+//     }
+// }
 
 void finPath(char *destination, uint32_t current_cluster_number, char path[256], bool *found)
 {
@@ -188,7 +187,7 @@ void process_commands()
     uint8_t row, col;
     syscall(8, (uint32_t)&row, 0, 0);
     syscall(9, (uint32_t)&col, 0, 0);
-    if (row > 18)
+    if (row > 20)
     {
         syscall(11, 0, 0, 0);
         syscall(10, 0, 0, 0);
@@ -1014,9 +1013,10 @@ void process_commands()
             strsplit(buffer[1], '/', path1);
 
             // search for file, note that extension is only at the end
+            char outText[4 * 512 * 512];
             struct FAT32DriverRequest req = {
-                .buf = (uint8_t *)0,
-                .buffer_size = 0x100000,
+                .buf = outText,
+                .buffer_size = 4 * 512 * 512,
                 .name = "\0\0\0\0\0\0\0",
                 .ext = "\0\0\0",
             };
@@ -1141,13 +1141,6 @@ void process_commands()
             print_shell_prompt();
             return;
         }
-    }
-    else if (strcmp(buffer[0], "clear") == 0)
-    {
-        syscall(11, 0, 0, 0);
-        syscall(10, 0, 0, 0);
-        syscall(8, (uint32_t)&row, 0, 0);
-        syscall(9, (uint32_t)&col, 0, 0);
     }
     else
     {

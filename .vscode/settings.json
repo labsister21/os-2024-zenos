@@ -18,7 +18,7 @@
         "stdbool.h": "c",
         "process.h": "c",
         "limits": "c",
-        "cmos.h": "c",
-        "clock.h": "c"
+        "clock.h": "c",
+        "cmos.h": "c"
     },
 }

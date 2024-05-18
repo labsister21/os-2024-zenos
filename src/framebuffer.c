@@ -126,7 +126,7 @@ void put_time(const char *str, uint32_t color)
 
     while (c != '\0')
     {
-        framebuffer_write(25, 71 + i, c, color, 0);
+        framebuffer_write(24, 71 + i, c, color, 0);
         i++;
         c = str[i];
     }

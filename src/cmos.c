@@ -1,4 +1,5 @@
 #include "./header/cmos.h"
+#include "./header/cpu/portio.h"
 
 int get_update_in_progress_flag()
 {

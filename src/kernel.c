@@ -226,7 +226,6 @@ void kernel_setup(void)
     set_tss_kernel_current_stack();
 
     // Create init process and execute it
-
     process_create_user_process(request);
     scheduler_init();
     scheduler_switch_to_next_process();
