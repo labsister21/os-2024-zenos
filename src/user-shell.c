@@ -772,7 +772,7 @@ void process_commands()
                     else
                     {
                         syscall(6, (uint32_t) "Fail..\n\n", 0x4, 0);
-                    }
+                                        }
                     found = true;
                     break;
                 }

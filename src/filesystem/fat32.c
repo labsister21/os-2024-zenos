@@ -389,7 +389,7 @@ int8_t delete(struct FAT32DriverRequest request)
     if (driverState.dir_table_buf.table[0].user_attribute == UATTR_NOT_EMPTY)
     {
         uint8_t i;
-        for (i = 0; i < (CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry)); i++)
+        for (i = 2; i < (CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry)); i++)
         {
             // Folder
             if (driverState.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY)

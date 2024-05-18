@@ -98,6 +98,17 @@ int main(int argc, char *argv[])
     req2.buffer_size = 0;
     write(req2);
 
+    struct FAT32DriverRequest reqlove;
+    char *namelove = "love3";
+
+    memcpy(reqlove.name, namelove, 6);
+    reqlove.ext[0] = '\0';
+    reqlove.ext[1] = '\0';
+    reqlove.ext[2] = '\0';
+    reqlove.parent_cluster_number = 16;
+    reqlove.buffer_size = 0;
+    write(reqlove);
+
     // struct FAT32DriverRequest req3;
     // char* name3 = "love3";
 
