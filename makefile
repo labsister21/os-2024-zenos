@@ -25,7 +25,7 @@ disk:
 
 run: all
 		@qemu-system-i386 -s -S -drive file=${OUTPUT_FOLDER}/${DISK_NAME}.bin,format=raw,if=ide,index=0,media=disk -cdrom $(OUTPUT_FOLDER)/$(ISO_NAME).iso
-all: disk insert-shell insert-clock
+all: disk insert-shell insert-clock insert-clockbuddy
 build: iso
 clean:
 	rm -rf *.o *.iso $(OUTPUT_FOLDER)/kernel
@@ -97,6 +97,19 @@ user-clock:
 	@size --target=binary $(OUTPUT_FOLDER)/clock
 	@rm -f *.o
 
+user-clockbuddy:
+	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/crt0.s -o crt0.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/clock_buddy.c -o clock_buddy.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/stdlib/string.c -o string.o
+	@$(LIN) -T $(SOURCE_FOLDER)/user-linker.ld -melf_i386 --oformat=binary \
+		crt0.o clock_buddy.o string.o -o $(OUTPUT_FOLDER)/clock_buddy
+	@echo Linking object clock object files and generate flat binary...
+	@$(LIN) -T $(SOURCE_FOLDER)/user-linker.ld -melf_i386 --oformat=elf32-i386 \
+		crt0.o clock_buddy.o string.o -o $(OUTPUT_FOLDER)/clock_buddy_elf
+	@echo Linking object clock object files and generate ELF32 for debugging...
+	@size --target=binary $(OUTPUT_FOLDER)/clock_buddy
+	@rm -f *.o
+
 
 insert-shell: inserter user-shell
 	@echo Inserting shell into root directory...
@@ -106,3 +119,7 @@ insert-shell: inserter user-shell
 insert-clock: inserter user-clock
 	@echo Inserting clock into root directory...
 	@cd $(OUTPUT_FOLDER); ./inserter clock 2 $(DISK_NAME).bin
+
+insert-clockbuddy: inserter user-clockbuddy
+	@echo Inserting clock into root directory...
+	@cd $(OUTPUT_FOLDER); ./inserter clock_buddy 2 $(DISK_NAME).bin

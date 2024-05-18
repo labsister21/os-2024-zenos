@@ -136,3 +136,27 @@ void putcharcustom(char c, uint8_t row, uint8_t col)
 {
     framebuffer_write(row, col, c, 0xF, 0);
 }
+
+void string_put_custom(const char *str, uint8_t row, uint8_t col)
+{
+    uint8_t i = 0;
+    char c = str[i];
+    uint8_t curr_row = row;
+    uint8_t curr_col = col;
+
+    while (c != '\0')
+    {
+        if (c == '\n')
+        {
+            curr_row++;
+            curr_col = 0;
+            i++;
+            c = str[i];
+            continue;
+        }
+        framebuffer_write(curr_row, curr_col, c, 0xF, 0);
+        curr_col++;
+        i++;
+        c = str[i];
+    }
+}
