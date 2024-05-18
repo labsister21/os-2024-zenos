@@ -263,6 +263,7 @@ int8_t read(struct FAT32DriverRequest request)
                 cluster_num = driverState.fat_table.cluster_map[cluster_num];
                 j++;
             } while (cluster_num != FAT32_FAT_END_OF_FILE);
+            request.buffer_size = j * CLUSTER_SIZE;
             return 0;
         }
         else
@@ -498,14 +499,13 @@ int8_t search_file_folder(uint32_t parent_cluster_number, struct FAT32DriverRequ
     return -1;
 }
 
-
 void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
 {
     struct FAT32DirectoryTable dirTable;
     // syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
     // // read_directory();
-    read_clusters(&dirTable,current_cluster_number,1);
-    
+    read_clusters(&dirTable, current_cluster_number, 1);
+
     int x;
     for (x = 2; x < 64; x++)
     {
@@ -513,7 +513,6 @@ void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
         {
             // char outText[4 * 512 * 512] = {0};
             struct FAT32DriverRequest req = {
-
 
             };
             req.parent_cluster_number = current_cluster_number;
@@ -525,11 +524,62 @@ void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
                 uint32_t nextClusterNumber = dirTable.table[x].cluster_high << 16 | dirTable.table[x].cluster_low;
                 deleteAll(nextClusterNumber, retcode);
             }
-            *retcode = delete(req);
-            if (*retcode != 0){
+            *retcode = delete (req);
+            if (*retcode != 0)
+            {
                 break;
             }
             // syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
         }
     }
 }
+
+int32_t getFileSize(struct FAT32DriverRequest request)
+{
+    read_clusters(&driverState.dir_table_buf, request.parent_cluster_number, 1);
+    if (driverState.dir_table_buf.table[0].user_attribute == UATTR_NOT_EMPTY)
+    {
+        bool isFound = false;
+        uint8_t i = 0;
+        while (i < (uint8_t)(CLUSTER_SIZE / sizeof(struct FAT32DirectoryEntry)) && !isFound)
+        {
+            if (memcmp(driverState.dir_table_buf.table[i].name, request.name, 8) == 0 && memcmp(driverState.dir_table_buf.table[i].ext, request.ext, 3) == 0)
+            {
+                if (driverState.dir_table_buf.table[i].attribute == ATTR_SUBDIRECTORY)
+                {
+                    return -1;
+                }
+                else if (driverState.dir_table_buf.table[i].filesize > request.buffer_size)
+                {
+                    return -1;
+                }
+                else
+                {
+                    isFound = true;
+                }
+            }
+            i++;
+        }
+        if (isFound)
+        {
+            i--;
+            uint32_t cluster_num = mergeClusterHighLow(driverState.dir_table_buf.table[i].cluster_high, driverState.dir_table_buf.table[i].cluster_low);
+            uint32_t j = 0;
+            do
+            {
+                cluster_num = driverState.fat_table.cluster_map[cluster_num];
+                j++;
+            } while (cluster_num != FAT32_FAT_END_OF_FILE);
+            request.buffer_size = j * CLUSTER_SIZE;
+            return j * CLUSTER_SIZE;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    else
+    {
+        return -1;
+    }
+};

@@ -88,12 +88,12 @@ int main(int argc, char *argv[])
         puts("Error: Unknown error");
     }
     struct FAT32DriverRequest req2;
-    char* name2 = "love2";
+    char *name2 = "love2";
 
-    memcpy(req2.name,name2,6);
-    req2.ext[0]  = '\0';
-    req2.ext[1]  = '\0';
-    req2.ext[2]  = '\0';
+    memcpy(req2.name, name2, 6);
+    req2.ext[0] = '\0';
+    req2.ext[1] = '\0';
+    req2.ext[2] = '\0';
     req2.parent_cluster_number = 2;
     req2.buffer_size = 0;
     write(req2);
@@ -109,9 +109,9 @@ int main(int argc, char *argv[])
     // req3.buffer_size = 0;
     // write(req3);
 
-    char file1Content[2*CLUSTER_SIZE];
-    char * content = "ABCDEFG\nHIJKLMN\nOPQRSTU\nVWXYZ";
-    memcpy(file1Content,content,2*CLUSTER_SIZE);
+    char file1Content[2 * CLUSTER_SIZE];
+    char *content = "ABCDEFG\nHIJKLMN\nOPQRSTU\nVWXYZ";
+    memcpy(file1Content, content, 2 * CLUSTER_SIZE);
     struct FAT32DriverRequest requestWriteFile = {
         .buf = file1Content,
         .name = "file1",
@@ -122,8 +122,8 @@ int main(int argc, char *argv[])
     write(requestWriteFile);
 
     char file2content[CLUSTER_SIZE];
-    char * content2 = "Ini file2\nAda di folder nested\nLesgooo\n";
-    memcpy(file2content,content2,CLUSTER_SIZE);
+    char *content2 = "Ini file2\nAda di folder nested\nLesgooo\n";
+    memcpy(file2content, content2, CLUSTER_SIZE);
     struct FAT32DriverRequest requestWriteFile2 = {
         .buf = file2content,
         .name = "file2",

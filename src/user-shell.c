@@ -267,10 +267,12 @@ void process_commands()
         get_dir(shellState.workDir, &dirTable);
 
         uint8_t z;
-        if (shellState.workDir == 2){
+        if (shellState.workDir == 2)
+        {
             z = 3;
         }
-        else {
+        else
+        {
             z = 2;
         }
         for (; z < 64; z++)
@@ -290,7 +292,8 @@ void process_commands()
                     char dot[1] = {0};
                     char *dotraw = ".";
                     memcpy(dot, dotraw, 1);
-                    if (dirTable.table[z].ext[0] != '\0'){
+                    if (dirTable.table[z].ext[0] != '\0')
+                    {
                         syscall(5, (uint32_t)dot, 0xF, 0);
                     }
                     int y;
@@ -377,14 +380,14 @@ void process_commands()
 
         memcpy(requestReadFile.name, splitFilenameExt[0], 8);
         memcpy(requestReadFile.ext, splitFilenameExt[1], 3);
-        if (shellState.workDir == 2 && memcmp(requestReadFile.name,"shell\0\0",8) == 0 && memcmp(requestReadFile.ext,"\0\0\0",3) == 0){
+        if (shellState.workDir == 2 && memcmp(requestReadFile.name, "shell\0\0", 8) == 0 && memcmp(requestReadFile.ext, "\0\0\0", 3) == 0)
+        {
             syscall(6, (uint32_t) "cat: ", 0x4, 0);
             syscall(6, (uint32_t)buffer[1], 0x4, 0);
             syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
-
         }
         requestReadFile.parent_cluster_number = shellState.workDir;
         requestReadFile.buffer_size = 4 * 512 * 512;
@@ -738,31 +741,37 @@ void process_commands()
                     break;
                 }
             }
-        } else
+        }
+        else
         {
             // delete folder
-             for (int i = startEntry ; i < 64 ; i++){
-                if ( (memcmp(dirTable.table[i].name ,result[0],8) == 0) && (memcmp(dirTable.table[i].ext, result[1],3) == 0) && (dirTable.table[i].name[0] != '\0')){
+            for (int i = startEntry; i < 64; i++)
+            {
+                if ((memcmp(dirTable.table[i].name, result[0], 8) == 0) && (memcmp(dirTable.table[i].ext, result[1], 3) == 0) && (dirTable.table[i].name[0] != '\0'))
+                {
                     // struct ClusterBuffer cl = {0};
-                    char outText[4*512*512] = {0};
+                    char outText[4 * 512 * 512] = {0};
                     struct FAT32DriverRequest req = {
-                        .buf                   = outText,
+                        .buf = outText,
 
                     };
                     req.parent_cluster_number = shellState.workDir;
                     req.buffer_size = dirTable.table[i].filesize;
-                    memcpy(req.name,dirTable.table[i].name, 8);
-                    memcpy(req.ext,dirTable.table[i].ext,3);
+                    memcpy(req.name, dirTable.table[i].name, 8);
+                    memcpy(req.ext, dirTable.table[i].ext, 3);
 
                     int8_t retcode;
                     uint32_t nextClusterNumber = dirTable.table[i].cluster_high << 16 | dirTable.table[i].cluster_low;
-                    syscall(53,(uint32_t)nextClusterNumber, (uint32_t) &retcode,0);
+                    syscall(53, (uint32_t)nextClusterNumber, (uint32_t)&retcode, 0);
                     // deleteAll(nextClusterNumber,&retcode);
-                    syscall(3, (uint32_t) &req, (uint32_t) &retcode,0);
-                    if (retcode == 0){
-                        syscall(6, (uint32_t)"Success!\n\n",0xf,0);
-                    } else{
-                        syscall(6, (uint32_t)"Fail..\n\n", 0x4,0);
+                    syscall(3, (uint32_t)&req, (uint32_t)&retcode, 0);
+                    if (retcode == 0)
+                    {
+                        syscall(6, (uint32_t) "Success!\n\n", 0xf, 0);
+                    }
+                    else
+                    {
+                        syscall(6, (uint32_t) "Fail..\n\n", 0x4, 0);
                     }
                     found = true;
                     break;
@@ -791,8 +800,8 @@ void process_commands()
         char path2[16][256] = {0};
         strsplit(buffer[1], '/', path1);
         strsplit(buffer[2], '/', path2);
-        if (strcmp(path1[0],"/") == 0){
-
+        if (strcmp(path1[0], "/") == 0)
+        {
         }
 
         // printting buffer
@@ -919,8 +928,12 @@ void process_commands()
                 print_shell_prompt();
                 return;
             }
-            uint32_t filesize;
-            filesize = strlen(req.buf);
+            uint32_t filesize = 0;
+            syscall(0, (uint32_t)&req, (uint32_t)&filesize, 0);
+            if (filesize < CLUSTER_SIZE)
+            {
+                filesize = CLUSTER_SIZE;
+            }
             reqTarget.buffer_size = filesize;
             memcpy(reqTarget.buf, req.buf, reqTarget.buffer_size);
             memcpy(reqTarget.name, req.name, 8);
@@ -941,69 +954,80 @@ void process_commands()
                 return;
             }
         }
-    } else if (strcmp(buffer[0], "ps") == 0){
-            // split untuk nama proses
-            if (countCommands > 3){
-                char message[256] = {0};
-                strcpy(message, "ps");
-                strcat(message, ": invalid commands\n\n");
-                reset_shell_buffer();
-                print_shell_prompt();
-                return;
-            }
-            else {
-                char process_names[16][256] = {0};
-                uint32_t process_ids[16] = {0};
-                syscall(51,(uint32_t)buffer[1], (uint32_t)process_names ,(uint32_t)process_ids);
-                char space = ' ';
-                char newLine = '\n';
-                for (int i = 0 ; i < 16 ; i++){
-                    if (process_names[i][0] != 0){
-                        syscall(6,(uint32_t)process_names[i],0xf,0);
-                        if (process_ids[i] <= 9){
-                            syscall(5, (uint32_t)&space,0xf,0);
-                            char id = process_ids[i] + '0';
-                            syscall(5, (uint32_t)&id,0xf,0);
-                            syscall(5, (uint32_t)&newLine,0xf,0);
-                        }
-                        else {
-                            char first = (process_ids[i] / 10 + '0');
-                            char second = (process_ids[i] % 10 + '0');
-                            syscall(5, (uint32_t)&space,0xf,0);
-                            syscall(5, (uint32_t)&first,0xf,0);
-                            syscall(5, (uint32_t)&second,0xf,0);
-                            syscall(5, (uint32_t)&newLine,0xf,0);
-
-                        }
-
+    }
+    else if (strcmp(buffer[0], "ps") == 0)
+    {
+        // split untuk nama proses
+        if (countCommands > 3)
+        {
+            char message[256] = {0};
+            strcpy(message, "ps");
+            strcat(message, ": invalid commands\n\n");
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        }
+        else
+        {
+            char process_names[16][256] = {0};
+            uint32_t process_ids[16] = {0};
+            syscall(51, (uint32_t)buffer[1], (uint32_t)process_names, (uint32_t)process_ids);
+            char space = ' ';
+            char newLine = '\n';
+            for (int i = 0; i < 16; i++)
+            {
+                if (process_names[i][0] != 0)
+                {
+                    syscall(6, (uint32_t)process_names[i], 0xf, 0);
+                    if (process_ids[i] <= 9)
+                    {
+                        syscall(5, (uint32_t)&space, 0xf, 0);
+                        char id = process_ids[i] + '0';
+                        syscall(5, (uint32_t)&id, 0xf, 0);
+                        syscall(5, (uint32_t)&newLine, 0xf, 0);
+                    }
+                    else
+                    {
+                        char first = (process_ids[i] / 10 + '0');
+                        char second = (process_ids[i] % 10 + '0');
+                        syscall(5, (uint32_t)&space, 0xf, 0);
+                        syscall(5, (uint32_t)&first, 0xf, 0);
+                        syscall(5, (uint32_t)&second, 0xf, 0);
+                        syscall(5, (uint32_t)&newLine, 0xf, 0);
                     }
                 }
-                syscall(5, (uint32_t)&newLine,0xf,0);
             }
-    }else if (strcmp(buffer[0], "exec") == 0){
-        if (countCommands != 2){
+            syscall(5, (uint32_t)&newLine, 0xf, 0);
+        }
+    }
+    else if (strcmp(buffer[0], "exec") == 0)
+    {
+        if (countCommands != 2)
+        {
             // something went wrong
-        } else{
-              // splitting first path and second path
-        char path1[16][256] = {0};
-        strsplit(buffer[1], '/', path1);
+        }
+        else
+        {
+            // splitting first path and second path
+            char path1[16][256] = {0};
+            strsplit(buffer[1], '/', path1);
 
-        // search for file, note that extension is only at the end
-        char outText[4 * 512 * 512] = {0};
-        struct FAT32DriverRequest req = {
-            .buf = outText,
-            .buffer_size = 4 * 512 * 512,
-            .name = "\0\0\0\0\0\0\0",
-            .ext = "\0\0\0",
-        };
+            // search for file, note that extension is only at the end
+            char outText[4 * 512 * 512] = {0};
+            struct FAT32DriverRequest req = {
+                .buf = outText,
+                .buffer_size = 4 * 512 * 512,
+                .name = "\0\0\0\0\0\0\0",
+                .ext = "\0\0\0",
+            };
 
-        req.parent_cluster_number = shellState.workDir;
-        uint8_t i = 0;
+            req.parent_cluster_number = shellState.workDir;
+            uint8_t i = 0;
 
-        // uint32_t prev_dir = ROOT_CLUSTER_NUMBER;
-        uint32_t curr_dir = shellState.workDir;
-        int8_t retcode = -1;
-        while (path1[i][0] != '\0' && i < 15)
+            // uint32_t prev_dir = ROOT_CLUSTER_NUMBER;
+            uint32_t curr_dir = shellState.workDir;
+            int8_t retcode = -1;
+            while (path1[i][0] != '\0' && i < 15)
             {
                 char fileName[16][256] = {0};
 
@@ -1056,29 +1080,33 @@ void process_commands()
                 print_shell_prompt();
                 return;
             }
-            else {
+            else
+            {
                 // have found the file needed
-                // write process !
+                // create_process
                 int32_t return_code = 0;
                 syscall(52, (uint32_t)&req, (uint32_t)&return_code, 0);
-                if (return_code != 0){
+                if (return_code != 0)
+                {
                     syscall(6, (uint32_t) "Something went wrong..\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
                 }
-                else {
+                else
+                {
                     syscall(6, (uint32_t) "Success! \n\n", 0xf, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
                 }
-
             }
         }
     }
-    else if (strcmp(buffer[0], "kill") == 0){
-        if (countCommands != 2){
+    else if (strcmp(buffer[0], "kill") == 0)
+    {
+        if (countCommands != 2)
+        {
             syscall(6, (uint32_t) "Success! \n\n", 0xf, 0);
             reset_shell_buffer();
             print_shell_prompt();
@@ -1087,23 +1115,27 @@ void process_commands()
 
         bool retcode = false; // ebx
         uint32_t pid = 0;
-        for (int i = 0 ; buffer[1][i] !='\0' ; i++){
+        for (int i = 0; buffer[1][i] != '\0'; i++)
+        {
             pid = pid * 10 + (buffer[1][i] - '0');
         }
-        if (pid == 0){
+        if (pid == 0)
+        {
             syscall(6, (uint32_t) "Failed!, unable to kill shell \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
         }
-        syscall(14,(uint32_t)&retcode,pid,0);
-        if (retcode){
+        syscall(14, (uint32_t)&retcode, pid, 0);
+        if (retcode)
+        {
             syscall(6, (uint32_t) "Success! \n\n", 0xf, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
         }
-        else{
+        else
+        {
             syscall(6, (uint32_t) "Failed! \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
@@ -1415,9 +1447,9 @@ int main(void)
 
     int32_t retcode;
     syscall(0, (uint32_t)&request, (uint32_t)&retcode, 0);
-    if (retcode == 0)
+    if (retcode != 0)
     {
-        syscall(6, (uint32_t) "owo\n", 4, 0xF);
+        syscall(6, (uint32_t) "Fail to load\n\n", 4, 0xF);
     }
 
     syscall(7, 0, 0, 0);
