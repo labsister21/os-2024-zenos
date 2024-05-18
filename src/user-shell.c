@@ -1095,7 +1095,7 @@ void process_commands()
                 }
                 else
                 {
-                    syscall(6, (uint32_t) "Success! \n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "Success! \n\n", 0xF, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
