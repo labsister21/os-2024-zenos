@@ -131,3 +131,8 @@ void put_time(const char *str, uint32_t color)
         c = str[i];
     }
 }
+
+void putcharcustom(char c, uint8_t row, uint8_t col)
+{
+    framebuffer_write(row, col, c, 0xF, 0);
+}
