@@ -41,14 +41,14 @@ int main(void)
     char str_incoming_clear[9] = "        \0";
 
     char brainrot[3][9] = {0};
-    memcpy(brainrot[0], "skibidi", strlen("skibidi") + 1);
-    memcpy(brainrot[1], "rizz", strlen("rizz") + 1);
-    memcpy(brainrot[2], "gyatt", strlen("gyatt") + 1);
+    memcpy(brainrot[0], " skibidi", strlen(" skibidi") + 1);
+    memcpy(brainrot[1], " rizz", strlen(" rizz") + 1);
+    memcpy(brainrot[2], " gyatt", strlen(" gyatt") + 1);
 
     char brainrot_clear[3][9];
-    memcpy(brainrot_clear[0], "       ", strlen("       ") + 1);
-    memcpy(brainrot_clear[1], "      ", strlen("      ") + 1);
-    memcpy(brainrot_clear[2], "       ", strlen("       ") + 1);
+    memcpy(brainrot_clear[0], "        ", strlen("        ") + 1);
+    memcpy(brainrot_clear[1], "       ", strlen("       ") + 1);
+    memcpy(brainrot_clear[2], "        ", strlen("        ") + 1);
 
     // for buddy incoming text
     syscallBuddy(18, (uint32_t)str_buddy, 22, 5);
@@ -265,6 +265,9 @@ int main(void)
 
     while (true)
     {
+        syscallBuddy(17, (uint32_t)&circle, 22, 71);
+        syscallBuddy(17, (uint32_t)&vertical_strip, 23, 71);
+        syscallBuddy(17, (uint32_t)&right_strip, 23, 72);
         brainrot_index = (brainrot_index + 1) % 3;
         brainrot_index_clear = (brainrot_index_clear + 1) % 3;
         syscallBuddy(18, (uint32_t)brainrot_clear[brainrot_index_clear], 22, 72);
@@ -274,21 +277,33 @@ int main(void)
         syscallBuddy(17, (uint32_t)&blank, 23, 70);
         syscallBuddy(17, (uint32_t)&blank, 24, 70);
 
+        syscallBuddy(17, (uint32_t)&circle, 22, 71);
+        syscallBuddy(17, (uint32_t)&vertical_strip, 23, 71);
+        syscallBuddy(17, (uint32_t)&right_strip, 23, 72);
         syscallBuddy(17, (uint32_t)&left_bracket, 24, 70);
 
         delay();
         syscallBuddy(17, (uint32_t)&blank, 24, 70);
 
+        syscallBuddy(17, (uint32_t)&circle, 22, 71);
+        syscallBuddy(17, (uint32_t)&vertical_strip, 23, 71);
+        syscallBuddy(17, (uint32_t)&right_strip, 23, 72);
         syscallBuddy(17, (uint32_t)&vertical_strip, 24, 70);
 
         delay();
         syscallBuddy(17, (uint32_t)&blank, 24, 70);
 
+        syscallBuddy(17, (uint32_t)&circle, 22, 71);
+        syscallBuddy(17, (uint32_t)&vertical_strip, 23, 71);
+        syscallBuddy(17, (uint32_t)&right_strip, 23, 72);
         syscallBuddy(17, (uint32_t)&left_bracket, 24, 70);
 
         delay();
         syscallBuddy(17, (uint32_t)&blank, 24, 70);
 
+        syscallBuddy(17, (uint32_t)&circle, 22, 71);
+        syscallBuddy(17, (uint32_t)&vertical_strip, 23, 71);
+        syscallBuddy(17, (uint32_t)&right_strip, 23, 72);
         syscallBuddy(17, (uint32_t)&under_score, 23, 69);
         syscallBuddy(17, (uint32_t)&under_score, 23, 70);
         syscallBuddy(17, (uint32_t)&left_strip, 24, 70);

@@ -3,13 +3,8 @@
 #include "header/filesystem/fat32.h"
 #include "header/stdlib/string.h"
 
-// #define strsplit(str,delim,result) syscall(20, (uint32_t) str, (uint32_t) delim, (uint32_t) result)
-// #define strlen(str,strlenvar) syscall(21, (uint32_t) str, (uint32_t) &strlenvar, 0)
-// #define strcpy(dest,src) syscall(22, (uint32_t) dest, (uint32_t) src, 0)
 #define get_dir(curr_parent_cluster_number, table) syscall(23, (uint32_t)curr_parent_cluster_number, (uint32_t)table, 0)
 #define set_dir(curr_parent_cluster_number, table) syscall(25, (uint32_t)curr_parent_cluster_number, (uint32_t)table, 0)
-
-// #define memcpy()
 
 static struct shellState shellState = {
     .workDir = ROOT_CLUSTER_NUMBER,
@@ -291,13 +286,19 @@ void process_commands()
                 {
                     char dot[1] = {0};
                     char *dotraw = ".";
+                    int y;
                     memcpy(dot, dotraw, 1);
                     if (dirTable.table[z].ext[0] != '\0')
                     {
                         syscall(5, (uint32_t)dot, 0xF, 0);
+                        y = 0;
                     }
-                    int y;
-                    for (y = 0; y < 3; y++)
+                    else
+                    {
+                        y = 3;
+                    }
+
+                    for (; y < 3; y++)
                     {
                         syscall(5, (uint32_t)&dirTable.table[z].ext[y], 0xF, 0);
                     }
@@ -311,7 +312,12 @@ void process_commands()
     {
         if (countCommands > 2)
         {
-            syscall(6, (uint32_t) "too many arguments\n\n", 0x4, 0);
+            syscall(6, (uint32_t) "mkdir: too many arguments\n\n", 0x4, 0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        } else if (strlen(buffer[1]) > 8){
+            syscall(6, (uint32_t) "mkdir: folder name too long\n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -422,7 +428,7 @@ void process_commands()
 
         char eachPathParam1[16][256] = {0};
 
-        // splitting src file 
+        // splitting src file
         strsplit(buffer[1], '/', eachPathParam1);
         int countPathParam1 = 0;
         for (int i = 0; i < 16; i++)
@@ -517,22 +523,22 @@ void process_commands()
                 };
             }
             if (isFound)
-            {   
+            {
                 // determine if in the same directory there is already a file with the same name and extension
                 struct FAT32DirectoryTable tempDirTable;
                 get_dir(shellState.workDir, &tempDirTable);
-                for (uint16_t entry_index = 2 ; entry_index < 64 ; entry_index++){
-                    if ( (memcmp(tempDirTable.table[entry_index].name , dirTable.table[x].name, 8) == 0 ) && (memcmp(tempDirTable.table[entry_index].ext,dirTable.table[x].ext, 3) == 0)){
+                for (uint16_t entry_index = 2; entry_index < 64; entry_index++)
+                {
+                    if ((memcmp(tempDirTable.table[entry_index].name, dirTable.table[x].name, 8) == 0) && (memcmp(tempDirTable.table[entry_index].ext, dirTable.table[x].ext, 3) == 0))
+                    {
                         // not able to rename !
                         syscall(6, (uint32_t) "mv: file/folder already exists !\n\n", 0x4, 0);
                         reset_shell_buffer();
                         print_shell_prompt();
                         return;
-
                     }
                 }
                 set_dir(shellState.workDir, &dirTable);
-                
             }
             else
             {
@@ -620,7 +626,6 @@ void process_commands()
                             memcpy(&lastDirTable, &tempDirTable, sizeof(struct FAT32DirectoryTable));
                             last_entry_index = i;
                             last_parent_cluster = currParentCluster;
-
                         }
                         else
                         {
@@ -673,7 +678,7 @@ void process_commands()
                     syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
                 }
                 else
-                {   
+                {
                     memset(&lastDirTable.table[last_entry_index], 0, 32);
                     set_dir(last_parent_cluster, &lastDirTable);
                     get_dir(currParentCluster, &tempDirTable);
@@ -801,7 +806,7 @@ void process_commands()
                     else
                     {
                         syscall(6, (uint32_t) "Fail..\n\n", 0x4, 0);
-                                        }
+                    }
                     found = true;
                     break;
                 }
@@ -951,18 +956,23 @@ void process_commands()
 
             syscall(0, (uint32_t)&req, (uint32_t)&returnCodeCopy, 0);
             if (returnCodeCopy != 0)
-            {   
-                if (returnCodeCopy == 1){
+            {
+                if (returnCodeCopy == 1)
+                {
                     syscall(6, (uint32_t) "Cannot copy a folder !\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
-                } else if (returnCodeCopy == 3){
+                }
+                else if (returnCodeCopy == 3)
+                {
                     syscall(6, (uint32_t) "Cannot find said file/folder !\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
-                } else {
+                }
+                else
+                {
                     syscall(6, (uint32_t) "Something went wrong!\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
@@ -1132,7 +1142,7 @@ void process_commands()
                     .parent_cluster_number = ROOT_CLUSTER_NUMBER,
                     .buffer_size = 0x100000,
                 };
-                memcpy(requestNew.name,req.name,8);
+                memcpy(requestNew.name, req.name, 8);
                 syscall(52, (uint32_t)&requestNew, (uint32_t)&return_code, 0);
                 if (return_code != 0)
                 {
@@ -1189,6 +1199,9 @@ void process_commands()
             print_shell_prompt();
             return;
         }
+    } else if (strcmp(buffer[0], "clear") == 0 && countCommands == 1) {
+        syscall(55,0,0,0);
+        syscall(10, 0,0,0);
     }
     else
     {

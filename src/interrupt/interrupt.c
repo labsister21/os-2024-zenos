@@ -166,7 +166,10 @@ void syscall(struct InterruptFrame frame)
         break;
 
     case 54:
-        *((int8_t *)frame.cpu.general.ecx) = getFileSize(*(struct FAT32DriverRequest *)frame.cpu.general.ebx);
+        *((int32_t *)frame.cpu.general.ecx) = getFileSize(*(struct FAT32DriverRequest *)frame.cpu.general.ebx);
+        break;
+    case 55:
+        framebuffer_clear();
         break;
     }
 }

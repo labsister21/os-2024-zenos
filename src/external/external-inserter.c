@@ -98,30 +98,8 @@ int main(int argc, char *argv[])
     req2.buffer_size = 0;
     write(req2);
 
-    struct FAT32DriverRequest reqlove;
-    char *namelove = "love3";
-
-    memcpy(reqlove.name, namelove, 6);
-    reqlove.ext[0] = '\0';
-    reqlove.ext[1] = '\0';
-    reqlove.ext[2] = '\0';
-    reqlove.parent_cluster_number = 16;
-    reqlove.buffer_size = 0;
-    write(reqlove);
-
-    // struct FAT32DriverRequest req3;
-    // char* name3 = "love3";
-
-    // memcpy(req3.name,name3,6);
-    // req3.ext[0]  = '\0';
-    // req3.ext[1]  = '\0';
-    // req3.ext[2]  = '\0';
-    // req3.parent_cluster_number = 15;
-    // req3.buffer_size = 0;
-    // write(req3);
-
-    char file1Content[2 * CLUSTER_SIZE];
-    char *content = "ABCDEFG\nHIJKLMN\nOPQRSTU\nVWXYZ";
+    char file1Content[10 * CLUSTER_SIZE];
+    char* content = "Lorem ipsum dolor sit amet ";
     memcpy(file1Content, content, 2 * CLUSTER_SIZE);
     struct FAT32DriverRequest requestWriteFile = {
         .buf = file1Content,
@@ -135,7 +113,7 @@ int main(int argc, char *argv[])
     char file2content[CLUSTER_SIZE];
     char *content2 = "Ini file2\nAda di folder nested\nLesgooo\n";
     memcpy(file2content, content2, CLUSTER_SIZE);
-    struct FAT32DriverRequest requestWriteFile2 = {
+    struct FAT32DriverRequest requestWriteFile2 = { 
         .buf = file2content,
         .name = "file2",
         .ext = "txt",
