@@ -78,16 +78,27 @@ uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *v
      *     > pagesize 4 mb  true
      */
 
-    uint32_t frame_index;
-    for (frame_index = 0; frame_index < PAGE_FRAME_MAX_COUNT; frame_index++)
-    {
+    uint32_t frame_index=0;
+    bool found = false;
+    while(frame_index < PAGE_FRAME_MAX_COUNT && !found){
         if (!page_manager_state.page_frame_map[frame_index])
         {
             page_manager_state.page_frame_map[frame_index] = true;
             page_manager_state.free_page_frame_count--;
-            break;
+            found = true;
+        }else{
+            frame_index++;
         }
     }
+    // for (frame_index = 0; frame_index < PAGE_FRAME_MAX_COUNT; frame_index++)
+    // {
+    //     if (!page_manager_state.page_frame_map[frame_index])
+    //     {
+    //         page_manager_state.page_frame_map[frame_index] = true;
+    //         page_manager_state.free_page_frame_count--;
+    //         break;
+    //     }
+    // }
     if (frame_index == PAGE_FRAME_MAX_COUNT)
         return -1;
 

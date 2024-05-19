@@ -10,15 +10,21 @@ static struct ProcessManagerState process_manager_state = {
 
 struct ProcessControlBlock *process_get_current_running_pcb_pointer(void)
 {
-    for (uint32_t i = 0; i < PROCESS_COUNT_MAX; i++)
-    {
-        if (process_manager_state.is_used[i] &&
-            process_list[i].metadata.state == RUNNING)
-        {
-            return &process_list[i];
-        }
+    uint32_t i = 0;
+    bool found = false;
+    while(i < PROCESS_COUNT_MAX && !found){
+        if(process_manager_state.is_used[i] &&
+            process_list[i].metadata.state == RUNNING){
+                found = true;
+            }else{
+                i++;
+            }
     }
-    return NULL;
+    if(found){
+        return &process_list[i];
+    }else{
+        return NULL;
+    }
 }
 
 struct ProcessControlBlock process_list[PROCESS_COUNT_MAX];
