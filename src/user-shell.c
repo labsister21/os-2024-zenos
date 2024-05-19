@@ -110,6 +110,17 @@ void shift_string(int from, int to, char *str, int size)
     }
 }
 
+
+void shift_recent_commands()
+{
+
+    for (int i = 15 ; i < 30 ; i++){
+        memcpy(shellState.recentsCommand[i - 15],shellState.recentsCommand[i],256);
+        memset(shellState.recentsCommand[i],0,256);
+    }
+    shellState.recentsWriteIndex = 15;
+}
+
 void clean_command(char *str)
 {
     int i = 0;
@@ -1370,15 +1381,20 @@ void use_keyboard()
 
                 shellState.bufferIndex += arrowBufferLength;
                 shellState.arrowBufferIndex += arrowBufferLength;
+
             }
             shellState.commandBuffer[shellState.bufferIndex] = '\0';
             shellState.hasWritten = false;
             syscall(5, (uint32_t)&currChar, (uint32_t)0xF, 0);
             if (shellState.bufferIndex > 0)
             {
+                if (shellState.recentsWriteIndex == 30){
+                    shift_recent_commands(); 
+                }
                 strcpy(shellState.recentsCommand[shellState.recentsWriteIndex], shellState.commandBuffer);
                 shellState.recentsWriteIndex++;
                 shellState.recentsReadIndex = shellState.recentsWriteIndex;
+   
             }
             process_commands();
         }
