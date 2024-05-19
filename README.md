@@ -40,7 +40,8 @@ Anoneee watashii punya banyak fitur menarik lohh OwO:
 
 
 ## Screenshots
-![Example screenshot](./img/screenshot.png)
+![mainpage](./img/mainpage.png)<br/><br/>
+![mainpage](./img/clock.png)
 <!-- If you have screenshots you'd like to share, include them here. -->
 
 
