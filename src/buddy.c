@@ -40,15 +40,15 @@ int main(void)
     char str_buddy_clear[6] = "     \0";
     char str_incoming_clear[9] = "        \0";
 
-    char brainrot[3][9];
+    char brainrot[3][9] = {0};
     memcpy(brainrot[0], "skibidi", strlen("skibidi") + 1);
     memcpy(brainrot[1], "rizz", strlen("rizz") + 1);
     memcpy(brainrot[2], "gyatt", strlen("gyatt") + 1);
 
     char brainrot_clear[3][9];
     memcpy(brainrot_clear[0], "       ", strlen("       ") + 1);
-    memcpy(brainrot_clear[1], "    ", strlen("    ") + 1);
-    memcpy(brainrot_clear[2], "     ", strlen("     ") + 1);
+    memcpy(brainrot_clear[1], "      ", strlen("      ") + 1);
+    memcpy(brainrot_clear[2], "       ", strlen("       ") + 1);
 
     // for buddy incoming text
     syscallBuddy(18, (uint32_t)str_buddy, 22, 5);
