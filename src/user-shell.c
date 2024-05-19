@@ -421,6 +421,8 @@ void process_commands()
         uint8_t param2ExtLength = 0;
 
         char eachPathParam1[16][256] = {0};
+
+        // splitting src file 
         strsplit(buffer[1], '/', eachPathParam1);
         int countPathParam1 = 0;
         for (int i = 0; i < 16; i++)
@@ -432,6 +434,8 @@ void process_commands()
         }
 
         char eachPathParam2[16][256] = {0};
+
+        // splitting target folder/file
         strsplit(buffer[2], '/', eachPathParam2);
         int countPathParam2 = 0;
         for (int i = 0; i < 16; i++)
@@ -442,7 +446,7 @@ void process_commands()
             }
         }
 
-        // cek apakah buffer[1] merupakan nama file
+        // check if src is a file
         strsplit(buffer[1], '.', splitFilenameExt1);
         for (int i = 0; i < 16; i++)
         {
@@ -455,6 +459,8 @@ void process_commands()
                 break;
             }
         }
+
+        // if it is a file
         if (countSplitParam1 == 2)
         {
             for (int y = 0; y < 256; y++)
@@ -511,8 +517,22 @@ void process_commands()
                 };
             }
             if (isFound)
-            {
+            {   
+                // determine if in the same directory there is already a file with the same name and extension
+                struct FAT32DirectoryTable tempDirTable;
+                get_dir(shellState.workDir, &tempDirTable);
+                for (uint16_t entry_index = 2 ; entry_index < 64 ; entry_index++){
+                    if ( (memcmp(tempDirTable.table[entry_index].name , dirTable.table[x].name, 8) == 0 ) && (memcmp(tempDirTable.table[entry_index].ext,dirTable.table[x].ext, 3) == 0)){
+                        // not able to rename !
+                        syscall(6, (uint32_t) "mv: file/folder already exists !\n\n", 0x4, 0);
+                        reset_shell_buffer();
+                        print_shell_prompt();
+                        return;
+
+                    }
+                }
                 set_dir(shellState.workDir, &dirTable);
+                
             }
             else
             {
@@ -531,6 +551,9 @@ void process_commands()
             char currName[8] = {0};
             char currExt[3] = {0};
             struct FAT32DirectoryTable tempDirTable;
+            struct FAT32DirectoryTable lastDirTable;
+            uint8_t last_entry_index = 0;
+            uint32_t last_parent_cluster = 0;
             for (int j = 0; j < countPathParam1; j++)
             {
                 isFound = false;
@@ -592,8 +615,12 @@ void process_commands()
                         if (j == countPathParam1 - 1)
                         {
                             memcpy(&tempDirEntry, &tempDirTable.table[i], 32);
-                            memset(&tempDirTable.table[i], 0, 32);
-                            set_dir(currParentCluster, &tempDirTable);
+
+                            // record last table
+                            memcpy(&lastDirTable, &tempDirTable, sizeof(struct FAT32DirectoryTable));
+                            last_entry_index = i;
+                            last_parent_cluster = currParentCluster;
+
                         }
                         else
                         {
@@ -646,7 +673,9 @@ void process_commands()
                     syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
                 }
                 else
-                {
+                {   
+                    memset(&lastDirTable.table[last_entry_index], 0, 32);
+                    set_dir(last_parent_cluster, &lastDirTable);
                     get_dir(currParentCluster, &tempDirTable);
                     for (int x = 2; x < 64; x++)
                     {
