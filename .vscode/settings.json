@@ -7,6 +7,18 @@
         "framebuffer.h": "c",
         "gdt.h": "c",
         "stdio.h": "c",
-        "paging.h": "c"
+        "paging.h": "c",
+        "stdint.h": "c",
+        "stddef.h": "c",
+        "sstream": "c",
+        "keyboard.h": "c",
+        "portio.h": "c",
+        "idt.h": "c",
+        "user-shell.h": "c",
+        "stdbool.h": "c",
+        "process.h": "c",
+        "limits": "c",
+        "clock.h": "c",
+        "cmos.h": "c"
     },
 }
