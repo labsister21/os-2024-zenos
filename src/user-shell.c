@@ -1085,7 +1085,14 @@ void process_commands()
                 // have found the file needed
                 // create_process
                 int32_t return_code = 0;
-                syscall(52, (uint32_t)&req, (uint32_t)&return_code, 0);
+                struct FAT32DriverRequest requestNew = {
+                    .buf = (uint8_t *)0,
+                    .ext = "\0\0\0",
+                    .parent_cluster_number = ROOT_CLUSTER_NUMBER,
+                    .buffer_size = 0x100000,
+                };
+                memcpy(requestNew.name,req.name,8);
+                syscall(52, (uint32_t)&requestNew, (uint32_t)&return_code, 0);
                 if (return_code != 0)
                 {
                     syscall(6, (uint32_t) "Something went wrong..\n\n", 0x4, 0);

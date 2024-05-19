@@ -99,15 +99,15 @@ user-clock:
 
 user-clockbuddy:
 	@$(ASM) $(AFLAGS) $(SOURCE_FOLDER)/crt0.s -o crt0.o
-	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/clock_buddy.c -o clock_buddy.o
+	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/buddy.c -o buddy.o
 	@$(CC)  $(CFLAGS) -fno-pie $(SOURCE_FOLDER)/stdlib/string.c -o string.o
 	@$(LIN) -T $(SOURCE_FOLDER)/user-linker.ld -melf_i386 --oformat=binary \
-		crt0.o clock_buddy.o string.o -o $(OUTPUT_FOLDER)/clock_buddy
+		crt0.o buddy.o string.o -o $(OUTPUT_FOLDER)/buddy
 	@echo Linking object clock object files and generate flat binary...
 	@$(LIN) -T $(SOURCE_FOLDER)/user-linker.ld -melf_i386 --oformat=elf32-i386 \
-		crt0.o clock_buddy.o string.o -o $(OUTPUT_FOLDER)/clock_buddy_elf
+		crt0.o buddy.o string.o -o $(OUTPUT_FOLDER)/buddy_elf
 	@echo Linking object clock object files and generate ELF32 for debugging...
-	@size --target=binary $(OUTPUT_FOLDER)/clock_buddy
+	@size --target=binary $(OUTPUT_FOLDER)/buddy
 	@rm -f *.o
 
 
@@ -122,4 +122,4 @@ insert-clock: inserter user-clock
 
 insert-clockbuddy: inserter user-clockbuddy
 	@echo Inserting clock into root directory...
-	@cd $(OUTPUT_FOLDER); ./inserter clock_buddy 2 $(DISK_NAME).bin
+	@cd $(OUTPUT_FOLDER); ./inserter buddy 2 $(DISK_NAME).bin

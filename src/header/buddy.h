@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "header/stdlib/string.h"
 
 void syscallBuddy(uint32_t eax, uint32_t ebx, uint32_t ecx, uint32_t edx);
 
