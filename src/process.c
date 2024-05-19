@@ -122,6 +122,7 @@ bool process_destroy(uint32_t pid)
             process_manager_state.is_used[i] = false;
             memset(&process_list[i], 0, sizeof(struct ProcessControlBlock));
             memset(&process_manager_state.process_name[i], 0, 8);
+            paging_free_page_directory(process_list[i].context.page_directory_virtual_addr);
             return true;
         }
     }

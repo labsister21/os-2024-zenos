@@ -75,12 +75,11 @@ void finPath(char *destination, uint32_t current_cluster_number, char path[256],
 void print_shell_prompt()
 {
     char prompt[256] = SHELL_DIRECTORY;
-
-    strcat(prompt, shellState.directory);
-    strcat(prompt, SHELL_PROMPT);
-
-    syscall(6, (uint32_t)prompt, BIOS_BLUE, 0);
-
+    
+    syscall(6, (uint32_t)prompt, BIOS_GREEN, 0);
+    syscall(6, (uint32_t)shellState.directory, BIOS_BLUE, 0);
+    syscall(6, (uint32_t)SHELL_PROMPT, BIOS_WHITE, 0);
+    
     uint8_t row, col;
     syscall(8, (uint32_t)&row, 0, 0);
     syscall(9, (uint32_t)&col, 0, 0);
@@ -1096,14 +1095,9 @@ void process_commands()
                 char fileName[16][256] = {0};
 
                 // possible seg fault
-                // if final destionation, in file/folder format
                 if (path1[i + 1][0] == '\0')
                 {
                     strsplit(path1[i], '.', fileName);
-                    // if (fileName[1][0] == '\0')
-                    // {
-                    //     syscall(6, (uint32_t) "cannot copy a folder!\n\n", 0x4, 0);
-                    // }
                 }
                 else
                 {
@@ -1156,6 +1150,7 @@ void process_commands()
                     .buffer_size = 0x100000,
                 };
                 memcpy(requestNew.name, req.name, 8);
+                memcpy(requestNew.ext,req.ext,3);
                 syscall(52, (uint32_t)&requestNew, (uint32_t)&return_code, 0);
                 if (return_code != 0)
                 {
