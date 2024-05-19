@@ -6,6 +6,8 @@
 #define get_dir(curr_parent_cluster_number, table) syscall(23, (uint32_t)curr_parent_cluster_number, (uint32_t)table, 0)
 #define set_dir(curr_parent_cluster_number, table) syscall(25, (uint32_t)curr_parent_cluster_number, (uint32_t)table, 0)
 
+
+// shellstate for each state
 static struct shellState shellState = {
     .workDir = ROOT_CLUSTER_NUMBER,
     .commandBuffer = {0},
