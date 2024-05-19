@@ -828,11 +828,11 @@ void process_commands()
             // if final destionation, in file/folder format
             if (path1[i + 1][0] == '\0')
             {
-                strsplit(path1[i], '.', fileName);
-                if (fileName[1][0] == '\0')
-                {
-                    syscall(6, (uint32_t) "cannot copy a folder!\n\n", 0x4, 0);
-                }
+                strsplit(path1[i], '.', fileName); // splitting based on extension if possible
+                // if (fileName[1][0] == '\0')
+                // // {
+                // //     syscall(6, (uint32_t) "cannot copy a folder!\n\n", 0x4, 0);
+                // // }
             }
             else
             {
@@ -922,14 +922,26 @@ void process_commands()
 
             syscall(0, (uint32_t)&req, (uint32_t)&returnCodeCopy, 0);
             if (returnCodeCopy != 0)
-            {
-                syscall(6, (uint32_t) "Something went wrong with the copying process! \n\n", 0x4, 0);
-                reset_shell_buffer();
-                print_shell_prompt();
-                return;
+            {   
+                if (returnCodeCopy == 1){
+                    syscall(6, (uint32_t) "Cannot copy a folder !\n\n", 0x4, 0);
+                    reset_shell_buffer();
+                    print_shell_prompt();
+                    return;
+                } else if (returnCodeCopy == 3){
+                    syscall(6, (uint32_t) "Cannot find said file/folder !\n\n", 0x4, 0);
+                    reset_shell_buffer();
+                    print_shell_prompt();
+                    return;
+                } else {
+                    syscall(6, (uint32_t) "Something went wrong!\n\n", 0x4, 0);
+                    reset_shell_buffer();
+                    print_shell_prompt();
+                    return;
+                }
             }
             uint32_t filesize = 0;
-            syscall(0, (uint32_t)&req, (uint32_t)&filesize, 0);
+            syscall(54, (uint32_t)&req, (uint32_t)&filesize, 0);
             if (filesize < CLUSTER_SIZE)
             {
                 filesize = CLUSTER_SIZE;
