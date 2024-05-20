@@ -87,6 +87,8 @@ int main(int argc, char *argv[])
     default:
         puts("Error: Unknown error");
     }
+
+    // file examples in storage.bin
     struct FAT32DriverRequest req2;
     char *name2 = "love2";
 
@@ -99,7 +101,7 @@ int main(int argc, char *argv[])
     write(req2);
 
     char file1Content[10 * CLUSTER_SIZE];
-    char* content = "Lorem ipsum dolor sit amet ";
+    char *content = "Lorem ipsum dolor sit amet ";
     memcpy(file1Content, content, 2 * CLUSTER_SIZE);
     struct FAT32DriverRequest requestWriteFile = {
         .buf = file1Content,
@@ -113,7 +115,7 @@ int main(int argc, char *argv[])
     char file2content[CLUSTER_SIZE];
     char *content2 = "Ini file2\nAda di folder nested\nLesgooo\n";
     memcpy(file2content, content2, CLUSTER_SIZE);
-    struct FAT32DriverRequest requestWriteFile2 = { 
+    struct FAT32DriverRequest requestWriteFile2 = {
         .buf = file2content,
         .name = "file2",
         .ext = "txt",

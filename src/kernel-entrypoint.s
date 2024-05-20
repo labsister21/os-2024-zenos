@@ -119,9 +119,8 @@ process_context_switch:
     lea ecx, [esp+0x04] ; Save the base address for struct Context ctx
     mov esp, ecx ;
     
-    popad ; dah masukin di register
+    popad
     
-    ; Restore segment registers
     pop gs
     pop fs
     pop es
