@@ -248,7 +248,7 @@ void process_commands()
         else
         {
 
-            for (int i = 1; i < 64; i++)
+            for (int i = 2; i < 64; i++)
             {
                 if (table.table[i].attribute == ATTR_SUBDIRECTORY)
                 {
@@ -752,11 +752,22 @@ void process_commands()
                     memset(&lastDirTable.table[last_entry_index], 0, 32);
                     set_dir(last_parent_cluster, &lastDirTable);
                     get_dir(currParentCluster, &tempDirTable);
+                    if (tempDirEntry.attribute == ATTR_SUBDIRECTORY)
+                    {
+                        uint32_t cluster_location = tempDirEntry.cluster_high << 16 | tempDirEntry.cluster_low;
+                        struct FAT32DirectoryTable tempDirTableNew;
+                        get_dir(cluster_location, &tempDirTableNew);
+                        tempDirTableNew.table[0].cluster_high = ((uint32_t)currParentCluster >> 16) & 0xffff;
+                        tempDirTableNew.table[0].cluster_low = ((uint32_t)currParentCluster & 0xffff);
+                        set_dir(cluster_location, &tempDirTableNew);
+                    }
+
                     for (int x = 2; x < 64; x++)
                     {
                         if (tempDirTable.table[x].name[0] == '\0')
                         {
                             memcpy(&tempDirTable.table[x], &tempDirEntry, 32);
+
                             set_dir(currParentCluster, &tempDirTable);
                             syscall(6, (uint32_t) "success! \n\n", 0xf, 0);
                             break;
