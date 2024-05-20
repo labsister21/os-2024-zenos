@@ -354,6 +354,10 @@ void process_commands()
             strcat(buffer[0], buffer[1]);
             strcat(buffer[0], "`: File exists\n\n");
             syscall(6, (uint32_t)buffer[0], 0x4, 0);
+        } else if (return_code == 0){
+            syscall(6, (uint32_t) "Success !\n", 0xf, 0);
+        } else if (return_code != 0){
+            syscall(6, (uint32_t) "mkdir: something went wrong\n", 0xf, 0);
         }
     }
     else if (strcmp(buffer[0], "cat") == 0)
@@ -524,7 +528,14 @@ void process_commands()
             struct FAT32DirectoryTable dirTable;
             get_dir(shellState.workDir, &dirTable);
             int x;
-            for (x = 2; x < 64; x++)
+
+            // if root 
+            if (shellState.workDir == 2){
+                x = 3;
+            } else {
+                x = 2;
+            }
+            for (; x < 64; x++)
             {
                 if (memcmp(dirTable.table[x].name, splitFilenameExt1[0], 8) == 0 && memcmp(dirTable.table[x].ext, splitFilenameExt1[1], 3) == 0)
                 {
@@ -539,7 +550,14 @@ void process_commands()
                 // determine if in the same directory there is already a file with the same name and extension
                 struct FAT32DirectoryTable tempDirTable;
                 get_dir(shellState.workDir, &tempDirTable);
-                for (uint16_t entry_index = 2; entry_index < 64; entry_index++)
+                uint16_t entry_index ;
+                if (shellState.workDir == 2){ // avoid shell
+                    entry_index = 3;
+                } else {
+                    entry_index = 2;
+                }
+
+                for (; entry_index < 64; entry_index++)
                 {
                     if ((memcmp(tempDirTable.table[entry_index].name, dirTable.table[x].name, 8) == 0) && (memcmp(tempDirTable.table[entry_index].ext, dirTable.table[x].ext, 3) == 0))
                     {
@@ -627,7 +645,13 @@ void process_commands()
                 {
                     memcpy(currName, eachPathParam1[j], 8);
                 }
-                for (uint8_t i = 2; i < 64; i++)
+                uint8_t i;
+                if (currParentCluster == ROOT_CLUSTER_NUMBER){
+                    i = 3;
+                } else {
+                    i = 2;
+                }
+                for (; i < 64; i++)
                 {
                     if (memcmp(tempDirTable.table[i].name, currName, 8) == 0 && memcmp(tempDirTable.table[i].ext, currExt, 3) == 0)
                     {
@@ -670,7 +694,13 @@ void process_commands()
                     get_dir(currParentCluster, &tempDirTable);
                     memcpy(currExt, "\0\0\0", 3);
                     memcpy(currName, eachPathParam2[j], 8);
-                    for (uint8_t i = 2; i < 64; i++)
+                    uint8_t i;
+                    if (currParentCluster == 2){
+                        i = 3;
+                    } else {
+                        i = 2;
+                    }
+                    for (;  i < 64; i++)
                     {
                         if (memcmp(tempDirTable.table[i].name, currName, 8) == 0 && memcmp(tempDirTable.table[i].ext, currExt, 3) == 0)
                         {
@@ -1145,6 +1175,13 @@ void process_commands()
             {
                 // have found the file needed
                 // create_process
+
+                if (memcmp(req.ext, "exe", 3) != 0){
+                    syscall(6, (uint32_t) "exec: File is not an executable\n\n", 0x4, 0);
+                    reset_shell_buffer();
+                    print_shell_prompt();
+                    return;
+                }
                 int32_t return_code = 0;
                 struct FAT32DriverRequest requestNew = {
                     .buf = (uint8_t *)0,
@@ -1158,7 +1195,7 @@ void process_commands()
                 syscall(52, (uint32_t)&requestNew, (uint32_t)&return_code, 0);
                 if (return_code != 0)
                 {
-                    syscall(6, (uint32_t) "Something went wrong..\n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "exec: Something went wrong..\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
