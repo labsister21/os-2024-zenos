@@ -1065,10 +1065,9 @@ void process_commands()
     }
     else if (strcmp(buffer[0], "exec") == 0)
     {
-        if (countCommands != 2)
+       if (countCommands != 2)
         {
-            // something went wrong
-            syscall(6, (uint32_t) "exec: invalid arguments \n\n", 0x4, 0);
+            syscall(6, (uint32_t) "ps: invalid arguments \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -1079,7 +1078,7 @@ void process_commands()
             char path1[16][256] = {0};
             strsplit(buffer[1], '/', path1);
 
-            // search for file
+            // search for file, note that extension is only at the end
             char outText[4 * 512 * 512] = {0};
             struct FAT32DriverRequest req = {
                 .buf = outText,
@@ -1094,12 +1093,21 @@ void process_commands()
             // uint32_t prev_dir = ROOT_CLUSTER_NUMBER;
             uint32_t curr_dir = shellState.workDir;
             int8_t retcode = -1;
-            char fileName[256] = {0};
             while (path1[i][0] != '\0' && i < 15)
             {
-                memset(fileName,0,8);
-                memcpy(fileName, path1[i], 8);
-                memcpy(req.name, fileName, 8);
+                char fileName[16][256] = {0};
+
+                // possible seg fault
+                if (path1[i + 1][0] == '\0')
+                {
+                    strsplit(path1[i], '.', fileName);
+                }
+                else
+                {
+                    memcpy(fileName[0], path1[i], 8);
+                }
+                memcpy(req.name, fileName[0], 8);
+                memcpy(req.ext, fileName[1], 3);
                 syscall(50, curr_dir, (uint32_t)&req, (uint32_t)&retcode);
 
                 if (retcode == -1)
@@ -1111,7 +1119,7 @@ void process_commands()
                 {
                     struct FAT32DirectoryTable table_dir;
                     get_dir(curr_dir, &table_dir);
-                    if ( (table_dir.table[retcode].attribute == ATTR_SUBDIRECTORY))
+                    if (table_dir.table[retcode].attribute == ATTR_SUBDIRECTORY)
                     {
                         // currently is folder, find next folder
                         req.parent_cluster_number = table_dir.table[retcode].cluster_high << 16 | table_dir.table[retcode].cluster_low;
@@ -1121,17 +1129,14 @@ void process_commands()
                     }
                     else
                     {
-                        // file found, check if final
-                        if (path1[i+1][0] != '\0'){
-                            retcode = -1;
-                        }
+                        // file found
                         break;
                     }
                 }
             }
             if (retcode == -1)
             {
-                syscall(6, (uint32_t) "exec: executable file doesn't exist\n\n", 0x4, 0);
+                syscall(6, (uint32_t) "file/folder does not exists\n\n", 0x4, 0);
                 reset_shell_buffer();
                 print_shell_prompt();
                 return;
@@ -1148,10 +1153,12 @@ void process_commands()
                     .buffer_size = 0x100000,
                 };
                 memcpy(requestNew.name, req.name, 8);
+                memcpy(requestNew.ext,req.ext,3);
+                requestNew.parent_cluster_number = req.parent_cluster_number;
                 syscall(52, (uint32_t)&requestNew, (uint32_t)&return_code, 0);
                 if (return_code != 0)
                 {
-                    syscall(6, (uint32_t) "exec: Something went wrong..\n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "Something went wrong..\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
@@ -1519,7 +1526,7 @@ int main(void)
     struct FAT32DriverRequest request = {
         .buf = (uint8_t *)0,
         .name = "shell",
-        .ext = "\0\0\0",
+        .ext = "exe",
         .parent_cluster_number = ROOT_CLUSTER_NUMBER,
         .buffer_size = 0x100000,
     };
