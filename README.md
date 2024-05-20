@@ -7,7 +7,7 @@
   - [General Information](#general-information)
   - [Technologies Used](#technologies-used)
   - [Features](#features)
-  - [Screenshots](#screenshots)
+  - [Sneak Peek](#sneak-peek)
   - [Setup](#setup)
   - [Usage](#usage)
   - [Commands](#commands)
@@ -37,10 +37,8 @@ Anoneee watashii punya banyak fitur menarik lohh OwO:
 - Tidak dilupakan ada teman selama menggunakan OS yang dateng seperti fanum dan menemani waktu edging minnaa
 
 
-## Screenshots
-![mainpage](./img/mainpage.png)<br/><br/>
-![mainpage](./img/clock.png)
-<!-- If you have screenshots you'd like to share, include them here. -->
+## Sneak Peek<br/><br/>
+![mainpage](./img/Demo%20ZenOS.gif)
 
 
 ## Setup
