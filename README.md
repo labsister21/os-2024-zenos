@@ -10,6 +10,7 @@
   - [Screenshots](#screenshots)
   - [Setup](#setup)
   - [Usage](#usage)
+  - [Commands](#commands)
   - [Project Status](#project-status)
   - [Room for Improvement](#room-for-improvement)
   - [Contribution Table](#contribution-table)
@@ -60,7 +61,105 @@ make all
 
 Setelah melakukan itu minna tinggal memencet ctrl + F5 untuk menjalankan akuu
 
+## Commands
 
+contoh struktur :
+```shell
+root
+│
+├── love1
+│   └── fileInside.txt
+│
+├── love2
+│   └── love3
+│         ├── file1.txt
+│         └── buddy.exe
+│
+└── file1.txt
+```
+Dore dore udah selesai setup nya ya UwU. Tentu watashi punya beberapa commands yang bisa dipake oWO. Gunakan commands sigma skibidi sebagai berikut
+
+- cd
+
+Fungsi cd yang watashi punya itu bisa masuk ke suatu folder relative pathing dan juga bisa keluar dari folder itu ⸜(｡˃ ᵕ ˂ )⸝♡
+````shell
+cd <..> 
+cd <folder_name>
+````
+
+- ls
+
+Pernah gasi minna lupa mewing atau lupa ada apa aja di folder? Nah fungsi ls ini sangat sigma dimana kita bisa liat semua folder atau file yang ada di folder yang sedang di telusuri
+````shell
+ls
+````
+
+- mkdir
+
+Minna mungkin ingin menyembunyikan makanan di folder baru sehingga tidak terkena fanum tax. Maka minna bisa buat folder baru dengan menggunakan fungsi ini
+````shell
+mkdir <folder_name>
+````
+
+- cat
+
+Minna bisa menampilkan file pada *current directory* loh !, cukup memakai command ini
+````shell
+cat <file_name_with_extension>
+````
+- cp
+
+Minna juga bisa mengcopy file !, command ini relative pada *root* ya !, berikut contohnya:
+
+````shell
+cp love1/fileInside.txt love2/love3
+````
+contoh tersebut akan mengcopy file dalam love1 ke love3 !
+
+- rm
+
+Minna juga bisa hapus file/folder pada *current directory* ya !
+````shell
+rm <file/folder>
+````
+
+- mv
+
+Kalau semisal minna mau pindahin file secret, hehe, minna bsia lakukan dengang command mv, command ini relative *root* folder ya !
+
+````shell
+mv love1/fileInside.txt love2/love3
+````
+
+- find
+
+Minna bisa mencari file/folder juga loh ! dengan command fin
+````shell
+find <file/folder_without_extension>
+````
+
+- exec
+
+Minna juga bisa execute sebuah file exe, dengan command ini minna bisa membuat proses loh ! ingat command ini relative *working directory* ya ! Contoh minnna di love2, maka untuk *execute* buddy.exe dapat dilakukan dengan cara berikut:
+
+````shell
+exec love3/buddy.exe
+````
+
+- ps
+
+Minna juga bisa melihat semua proses yang running/ready loh ! dengan command berikut:
+````shell
+ps
+````
+
+- kill
+
+Akhirnya, minna bisa membunuh sebuah proses berdasarkan *process id* nya
+
+````shell
+kill <process_id>
+````
 ## Project Status
 Maafkan watashi ya kalau belum 100% bug free karena watashi belum mencapai level 100 skibidi rizz, aku masih harus melalui tahapan yang lebih gyattt
 
