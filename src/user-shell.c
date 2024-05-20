@@ -265,7 +265,7 @@ void process_commands()
     {
         if (countCommands > 1)
         {
-            syscall(6, (uint32_t) "too many arguments\n\n", 0x4, 0);
+            syscall(6, (uint32_t) "ls: too many arguments\n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -345,7 +345,7 @@ void process_commands()
         syscall(24, (uint32_t)&req, (uint32_t)&return_code, 0);
         if (return_code == -1)
         {
-            syscall(6, (uint32_t) "Not enough space in the current working directory\n", 0x4, 0);
+            syscall(6, (uint32_t) "mkdir: Not enough space in the current working directory\n", 0x4, 0);
         }
         else if (return_code == 1)
         {
@@ -426,7 +426,7 @@ void process_commands()
     {
         if (countCommands > 3)
         {
-            syscall(6, (uint32_t) "too many arguments\n\n", 0x4, 0);
+            syscall(6, (uint32_t) "mv: too many arguments\n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -551,6 +551,7 @@ void process_commands()
                     }
                 }
                 set_dir(shellState.workDir, &dirTable);
+                syscall(6, (uint32_t) "success! \n\n", 0xf, 0);
             }
             else
             {
@@ -700,6 +701,7 @@ void process_commands()
                         {
                             memcpy(&tempDirTable.table[x], &tempDirEntry, 32);
                             set_dir(currParentCluster, &tempDirTable);
+                            syscall(6, (uint32_t) "success! \n\n", 0xf, 0);
                             break;
                         }
                     }
@@ -781,7 +783,7 @@ void process_commands()
                     }
                     else
                     {
-                        syscall(6, (uint32_t) "Fail..\n\n", 0x4, 0);
+                        syscall(6, (uint32_t) "rm: Fail..\n\n", 0x4, 0);
                     }
                     found = true;
                     break;
@@ -875,10 +877,6 @@ void process_commands()
             if (path1[i + 1][0] == '\0')
             {
                 strsplit(path1[i], '.', fileName); // splitting based on extension if possible
-                // if (fileName[1][0] == '\0')
-                // // {
-                // //     syscall(6, (uint32_t) "cannot copy a folder!\n\n", 0x4, 0);
-                // // }
             }
             else
             {
@@ -908,13 +906,18 @@ void process_commands()
                 else
                 {
                     // file found
+
+                    // check if final path
+                    if (path1[i + 1][0] != '\0'){
+                        retcode = -1;
+                    }
                     break;
                 }
             }
         }
         if (retcode == -1)
         {
-            syscall(6, (uint32_t) "file/folder does not exists\n\n", 0x4, 0);
+            syscall(6, (uint32_t) "cp: file/folder does not exists\n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -933,14 +936,13 @@ void process_commands()
             uint8_t j = 0;
             int8_t targetRetcode = 0;
             uint8_t targetCurrDir = ROOT_CLUSTER_NUMBER;
-            // bool copy_to_folder = false;
             while (path2[j][0] != '\0' && j < 15)
             {
                 memcpy(reqTarget.name, path2[j], 8);
                 syscall(50, targetCurrDir, (uint32_t)&reqTarget, (uint32_t)&targetRetcode);
                 if (targetRetcode == -1)
                 {
-                    syscall(6, (uint32_t) "target file/folder does not exists\n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "cp: target file/folder does not exists\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
@@ -957,7 +959,7 @@ void process_commands()
                     }
                     else
                     {
-                        syscall(6, (uint32_t) "Something went wrong \n\n", 0x4, 0);
+                        syscall(6, (uint32_t) "cp: Something went wrong \n\n", 0x4, 0);
                         reset_shell_buffer();
                         print_shell_prompt();
                         return;
@@ -971,21 +973,21 @@ void process_commands()
             {
                 if (returnCodeCopy == 1)
                 {
-                    syscall(6, (uint32_t) "Cannot copy a folder !\n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "cp: Cannot copy a folder !\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
                 }
                 else if (returnCodeCopy == 3)
                 {
-                    syscall(6, (uint32_t) "Cannot find said file/folder !\n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "cp: Cannot find said file/folder !\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
                 }
                 else
                 {
-                    syscall(6, (uint32_t) "Something went wrong!\n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "cp: Something went wrong!\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
@@ -1004,7 +1006,7 @@ void process_commands()
             syscall(24, (uint32_t)&reqTarget, (uint32_t)&returnCodeCopy, 0);
             if (returnCodeCopy != 0)
             {
-                syscall(6, (uint32_t) "Something went wrong with the writing process! \n\n", 0x4, 0);
+                syscall(6, (uint32_t) "cp: Something went wrong with the writing process! \n\n", 0x4, 0);
                 reset_shell_buffer();
                 print_shell_prompt();
                 return;
@@ -1023,9 +1025,7 @@ void process_commands()
         // split untuk nama proses
         if (countCommands > 3)
         {
-            char message[256] = {0};
-            strcpy(message, "ps");
-            strcat(message, ": invalid commands\n\n");
+            syscall(6, (uint32_t) "ps: invalid arguments \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -1068,6 +1068,10 @@ void process_commands()
         if (countCommands != 2)
         {
             // something went wrong
+            syscall(6, (uint32_t) "exec: invalid arguments \n\n", 0x4, 0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
         }
         else
         {
@@ -1075,7 +1079,7 @@ void process_commands()
             char path1[16][256] = {0};
             strsplit(buffer[1], '/', path1);
 
-            // search for file, note that extension is only at the end
+            // search for file
             char outText[4 * 512 * 512] = {0};
             struct FAT32DriverRequest req = {
                 .buf = outText,
@@ -1090,21 +1094,12 @@ void process_commands()
             // uint32_t prev_dir = ROOT_CLUSTER_NUMBER;
             uint32_t curr_dir = shellState.workDir;
             int8_t retcode = -1;
+            char fileName[256] = {0};
             while (path1[i][0] != '\0' && i < 15)
             {
-                char fileName[16][256] = {0};
-
-                // possible seg fault
-                if (path1[i + 1][0] == '\0')
-                {
-                    strsplit(path1[i], '.', fileName);
-                }
-                else
-                {
-                    memcpy(fileName[0], path1[i], 8);
-                }
-                memcpy(req.name, fileName[0], 8);
-                memcpy(req.ext, fileName[1], 3);
+                memset(fileName,0,8);
+                memcpy(fileName, path1[i], 8);
+                memcpy(req.name, fileName, 8);
                 syscall(50, curr_dir, (uint32_t)&req, (uint32_t)&retcode);
 
                 if (retcode == -1)
@@ -1116,7 +1111,7 @@ void process_commands()
                 {
                     struct FAT32DirectoryTable table_dir;
                     get_dir(curr_dir, &table_dir);
-                    if (table_dir.table[retcode].attribute == ATTR_SUBDIRECTORY)
+                    if ( (table_dir.table[retcode].attribute == ATTR_SUBDIRECTORY))
                     {
                         // currently is folder, find next folder
                         req.parent_cluster_number = table_dir.table[retcode].cluster_high << 16 | table_dir.table[retcode].cluster_low;
@@ -1126,14 +1121,17 @@ void process_commands()
                     }
                     else
                     {
-                        // file found
+                        // file found, check if final
+                        if (path1[i+1][0] != '\0'){
+                            retcode = -1;
+                        }
                         break;
                     }
                 }
             }
             if (retcode == -1)
             {
-                syscall(6, (uint32_t) "file/folder does not exists\n\n", 0x4, 0);
+                syscall(6, (uint32_t) "exec: executable file doesn't exist\n\n", 0x4, 0);
                 reset_shell_buffer();
                 print_shell_prompt();
                 return;
@@ -1150,11 +1148,10 @@ void process_commands()
                     .buffer_size = 0x100000,
                 };
                 memcpy(requestNew.name, req.name, 8);
-                memcpy(requestNew.ext,req.ext,3);
                 syscall(52, (uint32_t)&requestNew, (uint32_t)&return_code, 0);
                 if (return_code != 0)
                 {
-                    syscall(6, (uint32_t) "Something went wrong..\n\n", 0x4, 0);
+                    syscall(6, (uint32_t) "exec: Something went wrong..\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
                     return;
@@ -1173,7 +1170,7 @@ void process_commands()
     {
         if (countCommands != 2)
         {
-            syscall(6, (uint32_t) "Success! \n\n", 0xf, 0);
+            syscall(6, (uint32_t) "kill: invalid arguments \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -1187,7 +1184,7 @@ void process_commands()
         }
         if (pid == 0)
         {
-            syscall(6, (uint32_t) "Failed!, unable to kill shell \n\n", 0x4, 0);
+            syscall(6, (uint32_t) "kill: Failed!, unable to kill shell \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -1202,14 +1199,22 @@ void process_commands()
         }
         else
         {
-            syscall(6, (uint32_t) "Failed! \n\n", 0x4, 0);
+            syscall(6, (uint32_t) "kill: Failed! \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
         }
-    } else if (strcmp(buffer[0], "clear") == 0 && countCommands == 1) {
-        syscall(55,0,0,0);
-        syscall(10, 0,0,0);
+    } else if (strcmp(buffer[0], "clear") == 0) {
+        if (countCommands != 1){
+            syscall(6, (uint32_t) "clear: invalid arguments \n\n", 0x4, 0);
+            reset_shell_buffer();
+            print_shell_prompt();
+            return;
+        } else {
+            syscall(55,0,0,0);
+            syscall(10, 0,0,0);
+        }
+
     }
     else
     {
