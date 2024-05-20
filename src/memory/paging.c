@@ -90,15 +90,7 @@ uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *v
             frame_index++;
         }
     }
-    // for (frame_index = 0; frame_index < PAGE_FRAME_MAX_COUNT; frame_index++)
-    // {
-    //     if (!page_manager_state.page_frame_map[frame_index])
-    //     {
-    //         page_manager_state.page_frame_map[frame_index] = true;
-    //         page_manager_state.free_page_frame_count--;
-    //         break;
-    //     }
-    // }
+
     if (frame_index == PAGE_FRAME_MAX_COUNT)
         return -1;
 
@@ -113,14 +105,6 @@ uint32_t paging_allocate_user_page_frame(struct PageDirectory *page_dir, void *v
         .use_pagesize_4_mb = true,
     };
 
-    // uint32_t page_index = ((uint32_t)virtual_addr >> 22) & 0x3FF;
-    // page_dir->table[page_index].flag.present_bit = 1;
-    // page_dir->table[page_index].flag.write_bit = 1;
-    // page_dir->table[page_index].flag.user_bit = 1;
-    // page_dir->table[page_index].flag.use_pagesize_4_mb = 1;
-    // page_dir->table[page_index].lower_address = frame_index;
-    // flush_single_tlb(virtual_addr);
-    // frame_index = frame_index << 22;
     update_page_directory_entry(
         page_dir,
         (void *)(frame_index * PAGE_FRAME_SIZE),

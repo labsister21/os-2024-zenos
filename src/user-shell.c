@@ -355,7 +355,7 @@ void process_commands()
             strcat(buffer[0], "`: File exists\n\n");
             syscall(6, (uint32_t)buffer[0], 0x4, 0);
         } else if (return_code == 0){
-            syscall(6, (uint32_t) "Success !\n", 0xf, 0);
+            syscall(6, (uint32_t) "Success !\n\n", 0xf, 0);
         } else if (return_code != 0){
             syscall(6, (uint32_t) "mkdir: something went wrong\n", 0xf, 0);
         }
@@ -402,11 +402,11 @@ void process_commands()
 
         memcpy(requestReadFile.name, splitFilenameExt[0], 8);
         memcpy(requestReadFile.ext, splitFilenameExt[1], 3);
-        if (shellState.workDir == 2 && memcmp(requestReadFile.name, "shell\0\0", 8) == 0 && memcmp(requestReadFile.ext, "\0\0\0", 3) == 0)
+        if ( memcmp(requestReadFile.ext, "exe",3) == 0)
         {
             syscall(6, (uint32_t) "cat: ", 0x4, 0);
             syscall(6, (uint32_t)buffer[1], 0x4, 0);
-            syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+            syscall(6, (uint32_t) ": can't read folder/exe file\n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
@@ -423,7 +423,7 @@ void process_commands()
         {
             syscall(6, (uint32_t) "cat: ", 0x4, 0);
             syscall(6, (uint32_t)buffer[1], 0x4, 0);
-            syscall(6, (uint32_t) ": No such file or directory\n\n", 0x4, 0);
+            syscall(6, (uint32_t) ": No such file\n\n", 0x4, 0);
         }
     }
     else if (strcmp(buffer[0], "mv") == 0)
