@@ -6,7 +6,6 @@
 #define get_dir(curr_parent_cluster_number, table) syscall(23, (uint32_t)curr_parent_cluster_number, (uint32_t)table, 0)
 #define set_dir(curr_parent_cluster_number, table) syscall(25, (uint32_t)curr_parent_cluster_number, (uint32_t)table, 0)
 
-
 // shellstate for each state
 static struct shellState shellState = {
     .workDir = ROOT_CLUSTER_NUMBER,
@@ -75,11 +74,11 @@ void finPath(char *destination, uint32_t current_cluster_number, char path[256],
 void print_shell_prompt()
 {
     char prompt[256] = SHELL_DIRECTORY;
-    
+
     syscall(6, (uint32_t)prompt, BIOS_GREEN, 0);
     syscall(6, (uint32_t)shellState.directory, BIOS_BLUE, 0);
     syscall(6, (uint32_t)SHELL_PROMPT, BIOS_WHITE, 0);
-    
+
     uint8_t row, col;
     syscall(8, (uint32_t)&row, 0, 0);
     syscall(9, (uint32_t)&col, 0, 0);
@@ -111,13 +110,13 @@ void shift_string(int from, int to, char *str, int size)
     }
 }
 
-
 void shift_recent_commands()
 {
 
-    for (int i = 15 ; i < 30 ; i++){
-        memcpy(shellState.recentsCommand[i - 15],shellState.recentsCommand[i],256);
-        memset(shellState.recentsCommand[i],0,256);
+    for (int i = 15; i < 30; i++)
+    {
+        memcpy(shellState.recentsCommand[i - 15], shellState.recentsCommand[i], 256);
+        memset(shellState.recentsCommand[i], 0, 256);
     }
     shellState.recentsWriteIndex = 15;
 }
@@ -156,6 +155,16 @@ void clean_command(char *str)
                 }
             }
             l++;
+        }
+    }
+}
+
+void delay_shell()
+{
+    for (int i = 0; i < 10000; i++)
+    {
+        for (int j = 0; j < 10000; j++)
+        {
         }
     }
 }
@@ -328,7 +337,9 @@ void process_commands()
             reset_shell_buffer();
             print_shell_prompt();
             return;
-        } else if (strlen(buffer[1]) > 8){
+        }
+        else if (strlen(buffer[1]) > 8)
+        {
             syscall(6, (uint32_t) "mkdir: folder name too long\n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
@@ -354,9 +365,13 @@ void process_commands()
             strcat(buffer[0], buffer[1]);
             strcat(buffer[0], "`: File exists\n\n");
             syscall(6, (uint32_t)buffer[0], 0x4, 0);
-        } else if (return_code == 0){
+        }
+        else if (return_code == 0)
+        {
             syscall(6, (uint32_t) "Success !\n\n", 0xf, 0);
-        } else if (return_code != 0){
+        }
+        else if (return_code != 0)
+        {
             syscall(6, (uint32_t) "mkdir: something went wrong\n", 0xf, 0);
         }
     }
@@ -402,7 +417,7 @@ void process_commands()
 
         memcpy(requestReadFile.name, splitFilenameExt[0], 8);
         memcpy(requestReadFile.ext, splitFilenameExt[1], 3);
-        if ( memcmp(requestReadFile.ext, "exe",3) == 0)
+        if (memcmp(requestReadFile.ext, "exe", 3) == 0)
         {
             syscall(6, (uint32_t) "cat: ", 0x4, 0);
             syscall(6, (uint32_t)buffer[1], 0x4, 0);
@@ -529,10 +544,13 @@ void process_commands()
             get_dir(shellState.workDir, &dirTable);
             int x;
 
-            // if root 
-            if (shellState.workDir == 2){
+            // if root
+            if (shellState.workDir == 2)
+            {
                 x = 3;
-            } else {
+            }
+            else
+            {
                 x = 2;
             }
             for (; x < 64; x++)
@@ -550,10 +568,13 @@ void process_commands()
                 // determine if in the same directory there is already a file with the same name and extension
                 struct FAT32DirectoryTable tempDirTable;
                 get_dir(shellState.workDir, &tempDirTable);
-                uint16_t entry_index ;
-                if (shellState.workDir == 2){ // avoid shell
+                uint16_t entry_index;
+                if (shellState.workDir == 2)
+                { // avoid shell
                     entry_index = 3;
-                } else {
+                }
+                else
+                {
                     entry_index = 2;
                 }
 
@@ -646,9 +667,12 @@ void process_commands()
                     memcpy(currName, eachPathParam1[j], 8);
                 }
                 uint8_t i;
-                if (currParentCluster == ROOT_CLUSTER_NUMBER){
+                if (currParentCluster == ROOT_CLUSTER_NUMBER)
+                {
                     i = 3;
-                } else {
+                }
+                else
+                {
                     i = 2;
                 }
                 for (; i < 64; i++)
@@ -695,12 +719,15 @@ void process_commands()
                     memcpy(currExt, "\0\0\0", 3);
                     memcpy(currName, eachPathParam2[j], 8);
                     uint8_t i;
-                    if (currParentCluster == 2){
+                    if (currParentCluster == 2)
+                    {
                         i = 3;
-                    } else {
+                    }
+                    else
+                    {
                         i = 2;
                     }
-                    for (;  i < 64; i++)
+                    for (; i < 64; i++)
                     {
                         if (memcmp(tempDirTable.table[i].name, currName, 8) == 0 && memcmp(tempDirTable.table[i].ext, currExt, 3) == 0)
                         {
@@ -938,7 +965,8 @@ void process_commands()
                     // file found
 
                     // check if final path
-                    if (path1[i + 1][0] != '\0'){
+                    if (path1[i + 1][0] != '\0')
+                    {
                         retcode = -1;
                     }
                     break;
@@ -1095,7 +1123,7 @@ void process_commands()
     }
     else if (strcmp(buffer[0], "exec") == 0)
     {
-       if (countCommands != 2)
+        if (countCommands != 2)
         {
             syscall(6, (uint32_t) "ps: invalid arguments \n\n", 0x4, 0);
             reset_shell_buffer();
@@ -1176,7 +1204,8 @@ void process_commands()
                 // have found the file needed
                 // create_process
 
-                if (memcmp(req.ext, "exe", 3) != 0){
+                if (memcmp(req.ext, "exe", 3) != 0)
+                {
                     syscall(6, (uint32_t) "exec: File is not an executable\n\n", 0x4, 0);
                     reset_shell_buffer();
                     print_shell_prompt();
@@ -1190,7 +1219,7 @@ void process_commands()
                     .buffer_size = 0x100000,
                 };
                 memcpy(requestNew.name, req.name, 8);
-                memcpy(requestNew.ext,req.ext,3);
+                memcpy(requestNew.ext, req.ext, 3);
                 requestNew.parent_cluster_number = req.parent_cluster_number;
                 syscall(52, (uint32_t)&requestNew, (uint32_t)&return_code, 0);
                 if (return_code != 0)
@@ -1248,17 +1277,80 @@ void process_commands()
             print_shell_prompt();
             return;
         }
-    } else if (strcmp(buffer[0], "clear") == 0) {
-        if (countCommands != 1){
+    }
+    else if (strcmp(buffer[0], "clear") == 0)
+    {
+        if (countCommands != 1)
+        {
             syscall(6, (uint32_t) "clear: invalid arguments \n\n", 0x4, 0);
             reset_shell_buffer();
             print_shell_prompt();
             return;
-        } else {
-            syscall(55,0,0,0);
-            syscall(10, 0,0,0);
         }
+        else
+        {
+            syscall(55, 0, 0, 0);
+            syscall(10, 0, 0, 0);
+        }
+    }
+    else if (strcmp(buffer[0], "mewing?") == 0)
+    {
+        syscall(11, 0, 0, 0);
+        syscall(10, 0, 0, 0);
+        syscall(6, (uint32_t) "          .:-------------:..      \n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "       .:---::.........::---:..  \n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "     .=--:.................:--=\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "   .-=-:.....................:---.\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) " ..--::::.:*#+:.......:+#*-.::::-=:.\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "..=-::::::+***+.......=***+::::::-=..\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) ".---::::::-===-.......:==+-::::::---.\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) ":=--:::::::::::::::::::::::::::::--=:\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "=----:::::::::::---=::::::::::::----=\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "+-------::::::::=--=-::::::::-------=\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "+-----------:::-=--=+-:::-----------=\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "==--------------=--=---------------==\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) ":==-------------=+====-------------=:\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) ".-=-----------===---===-----------=-.\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "..-==--------=-------+==--=-----===..\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) " ..-==------=----==--++--==---====.. \n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "    .:========-----=-++=-========-..\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "     .:+===+-------+---======+-.\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "          .:=------+===-:.\n", 0xF, 0);
+        delay_shell();
+        syscall(6, (uint32_t) "           .-=====-:.\n", 0xF, 0);
 
+        bool retcode;
+        for (int pid = 1; pid < 16; pid++)
+        {
+            syscall(14, (uint32_t)&retcode, pid, 0);
+        }
+        syscall(6, (uint32_t) "THE MEWING GOD HAVE ARRIVED\n", 0x4, 0);
+        syscall(6, (uint32_t) "ALL PROCESS KILLED\n", 0x4, 0);
+        delay_shell();
+        delay_shell();
+        delay_shell();
+        delay_shell();
+        delay_shell();
+        syscall(11, 0, 0, 0);
+        syscall(10, 0, 0, 0);
     }
     else
     {
@@ -1427,20 +1519,19 @@ void use_keyboard()
 
                 shellState.bufferIndex += arrowBufferLength;
                 shellState.arrowBufferIndex += arrowBufferLength;
-
             }
             shellState.commandBuffer[shellState.bufferIndex] = '\0';
             shellState.hasWritten = false;
             syscall(5, (uint32_t)&currChar, (uint32_t)0xF, 0);
             if (shellState.bufferIndex > 0)
             {
-                if (shellState.recentsWriteIndex == 30){
-                    shift_recent_commands(); 
+                if (shellState.recentsWriteIndex == 30)
+                {
+                    shift_recent_commands();
                 }
                 strcpy(shellState.recentsCommand[shellState.recentsWriteIndex], shellState.commandBuffer);
                 shellState.recentsWriteIndex++;
                 shellState.recentsReadIndex = shellState.recentsWriteIndex;
-   
             }
             process_commands();
         }

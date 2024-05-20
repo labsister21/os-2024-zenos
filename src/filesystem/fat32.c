@@ -129,15 +129,6 @@ bool is_empty_storage(void)
 {
     struct BlockBuffer block;
     read_blocks(&block, BOOT_SECTOR, 1);
-    // bool isEmpty = false;
-    // uint16_t i = 0;
-    // while((i<BLOCK_SIZE) && (!isEmpty)){
-    //     if(block.buf[i] != fs_signature[i]){
-    //         isEmpty = true;
-    //     };
-    //     i++;
-    // }
-    // return isEmpty;
     return memcmp(&block, fs_signature, BLOCK_SIZE);
 };
 
@@ -308,14 +299,6 @@ int8_t write(struct FAT32DriverRequest request)
             // validate file or folder name
             dir_loc = i;
         }
-
-        // else if (request.buffer_size >= 0){
-
-        // }
-        // else {
-        //     // invalid buffer, buffer < 0
-        //     return -1;
-        // }
         if ((memcmp(driverState.dir_table_buf.table[i].name, request.name, 8) == 0) && (memcmp(driverState.dir_table_buf.table[i].ext, request.ext, 3) == 0))
         {
             return 1;
@@ -502,8 +485,6 @@ int8_t search_file_folder(uint32_t parent_cluster_number, struct FAT32DriverRequ
 void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
 {
     struct FAT32DirectoryTable dirTable;
-    // syscall(23, current_cluster_number, (uint32_t)&dirTable, 0);
-    // // read_directory();
     read_clusters(&dirTable, current_cluster_number, 1);
 
     int x;
@@ -511,7 +492,6 @@ void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
     {
         if (dirTable.table[x].name[0] != '\0')
         {
-            // char outText[4 * 512 * 512] = {0};
             struct FAT32DriverRequest req = {
 
             };
@@ -529,7 +509,6 @@ void deleteAll(uint32_t current_cluster_number, int8_t *retcode)
             {
                 break;
             }
-            // syscall(3, (uint32_t)&req, (uint32_t)retcode, 0);
         }
     }
 }

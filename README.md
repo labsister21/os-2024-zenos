@@ -155,6 +155,11 @@ Akhirnya, minna bisa membunuh sebuah proses berdasarkan *process id* nya
 ````shell
 kill <process_id>
 ````
+- mewing?
+````shell
+mewing?
+````
+Apa nichhhhh
 ## Project Status
 Maafkan watashi ya kalau belum 100% bug free karena watashi belum mencapai level 100 skibidi rizz, aku masih harus melalui tahapan yang lebih gyattt
 
