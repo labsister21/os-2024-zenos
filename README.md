@@ -16,14 +16,11 @@
   - [Contribution Table](#contribution-table)
   - [Acknowledgements](#acknowledgements)
   - [Closing Statements](#closing-statements)
-<!-- * [License](#license) -->
 
 
 ## General Information
 - Moshi moshi minnnaa ~~ Watashi wa ZenOS desuu, yoroshuku onegaishimassuu!! ^__^
 - Anonee akuu dibuat sama Tjhia, Evelyn , Marvel sama Max untuk tugas Sistem Operasi IF, jadi sayang deh sama mereka~~ >//<
-  
-<!-- You don't have to answer all the questions - just the ones relevant to your project. -->
 
 
 ## Technologies Used
@@ -63,7 +60,7 @@ Setelah melakukan itu minna tinggal memencet ctrl + F5 untuk menjalankan akuu
 
 ## Commands
 
-contoh struktur :
+Contoh struktur :
 ```shell
 root
 │
@@ -103,22 +100,22 @@ mkdir <folder_name>
 
 - cat
 
-Minna bisa menampilkan file pada *current directory* loh !, cukup memakai command ini
+Ingin melihat file.txt yang isinya puisi rizz level 500 yang bisa mendapatkan gyatt 1000 pada *current directory* ? cukup memakai command ini
 ````shell
 cat <file_name_with_extension>
 ````
 - cp
 
-Minna juga bisa mengcopy file !, command ini relative pada *root* ya !, berikut contohnya:
+Punya grimace shake yang pengen di copy? gunakanlah command ini:
 
 ````shell
-cp love1/fileInside.txt love2/love3
+cp love1/grimace_shake.txt love2/love3
 ````
-contoh tersebut akan mengcopy file dalam love1 ke love3 !
+contoh tersebut akan mengcopy grimace_shake dalam love1 ke love3 !
 
 - rm
 
-Minna juga bisa hapus file/folder pada *current directory* ya !
+Punya file Ohio.txt yang ingin di remove? maka bisa gunakan command ini
 ````shell
 rm <file/folder>
 ````
@@ -133,7 +130,7 @@ mv love1/fileInside.txt love2/love3
 
 - find
 
-Minna bisa mencari file/folder juga loh ! dengan command fin
+Mungkin minna pernah membuat file 10/10 gyatt tapi fumble dan lupa lokasinya. Maka bisa menggunakan command ini
 ````shell
 find <file/folder_without_extension>
 ````
